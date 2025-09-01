@@ -29,10 +29,9 @@ const handler: Handler = async (event: HandlerEvent) => {
   console.log('Processing auth request for path:', event.path);
   
   try {
-    // Verificar se é uma requisição de login
-    const isLoginRequest = event.httpMethod === 'POST' && 
-      (event.path.includes('login') || event.path.endsWith('auth') || 
-       (event.body && JSON.parse(event.body || '{}').email));
+    // Para Netlify, o path será "/login" quando chamado via /api/auth/login
+    // ou apenas "/" quando chamado diretamente via /api/auth
+    const isLoginRequest = event.httpMethod === 'POST';
     
     if (isLoginRequest) {
       const { email, password } = JSON.parse(event.body || '{}');
