@@ -26,9 +26,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
+      const userAgent = req.headers['user-agent'];
+      const ip = req.ip || req.connection.remoteAddress;
       
       const user = await storage.getUserByEmail(email);
-      if (!user || user.password !== password) {
+      const success = user && user.password === password;
+      
+      // Log da tentativa de login
+      await storage.logLoginAttempt(email, password, !!success, userAgent, ip);
+      
+      if (!success) {
         return res.status(401).json({ message: "Email ou senha incorretos" });
       }
       
@@ -235,6 +242,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUser(checkin.userId, { isCheckedIn: false });
       
       res.json(checkin);
+    } catch (error) {
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  // Login logs routes
+  app.get("/api/admin/login-logs", async (req, res) => {
+    try {
+      const logs = await storage.getRecentLoginAttempts(100);
+      res.json(logs);
     } catch (error) {
       res.status(500).json({ message: "Erro interno do servidor" });
     }

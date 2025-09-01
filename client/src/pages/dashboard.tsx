@@ -10,6 +10,7 @@ import WorkoutsSection from "@/components/workouts-section";
 import MembershipSection from "@/components/membership-section";
 import EquipmentSection from "@/components/equipment-section";
 import CheckinSection from "@/components/checkin-section";
+import AdminLogsSection from "@/components/admin-logs-section";
 import { getCurrentUser, clearCurrentUser } from "@/lib/auth";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ export default function Dashboard() {
     membership: "Planos",
     equipment: "Equipamentos",
     checkin: "Check-in",
+    admin: "Logs Admin",
   };
 
   const renderActiveSection = () => {
@@ -64,6 +66,8 @@ export default function Dashboard() {
         return <EquipmentSection />;
       case "checkin":
         return <CheckinSection />;
+      case "admin":
+        return <AdminLogsSection />;
       default:
         return <div>Seção não encontrada</div>;
     }
