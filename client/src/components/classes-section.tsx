@@ -78,7 +78,7 @@ export default function ClassesSection() {
   });
 
   const isUserBooked = (classId: string) => {
-    return userBookings?.some((booking: any) => 
+    return (userBookings as any[])?.some((booking: any) => 
       booking.classId === classId && booking.status === "booked"
     );
   };
@@ -148,8 +148,8 @@ export default function ClassesSection() {
 
       {/* Classes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {classes?.length > 0 ? (
-          classes.map((cls: any, index: number) => {
+        {(classes as any[])?.length > 0 ? (
+          (classes as any[]).map((cls: any, index: number) => {
             const status = getClassStatus(cls);
             return (
               <Card key={cls.id} data-testid={`card-class-${index}`}>

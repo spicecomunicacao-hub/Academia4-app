@@ -12,7 +12,7 @@ export default function MembershipSection() {
     queryKey: ["/api/plans"],
   });
 
-  const currentPlan = plans?.find((plan: any) => plan.id === currentUser?.planId);
+  const currentPlan = (plans as any[])?.find((plan: any) => plan.id === currentUser?.planId);
 
   const formatPrice = (price: number) => {
     return `R$ ${(price / 100).toFixed(2).replace('.', ',')}`;
@@ -89,7 +89,7 @@ export default function MembershipSection() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plans?.map((plan: any, index: number) => {
+            {(plans as any[])?.map((plan: any, index: number) => {
               const isCurrent = plan.id === currentUser?.planId;
               
               return (
