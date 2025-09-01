@@ -21,34 +21,45 @@ export interface LoginLog {
   ip?: string;
 }
 
-// Dados de exemplo (substitua por conexão real com banco)
-const users: User[] = [
-  {
-    id: "admin-001",
-    name: "Administrador",
-    email: "admin@gmail.com",
-    password: "123456",
-    isAdmin: true,
-    isCheckedIn: false,
-    planId: "premium"
-  },
-  {
-    id: "user-001", 
-    name: "João Silva",
-    email: "joao@gmail.com",
-    password: "123456",
-    isAdmin: false,
-    isCheckedIn: false,
-    planId: "basic"
-  }
-];
+// Função para garantir que os dados estejam sempre disponíveis
+function getInitialUsers(): User[] {
+  return [
+    {
+      id: "admin-001",
+      name: "Administrador",
+      email: "admin@gmail.com",
+      password: "123456",
+      isAdmin: true,
+      isCheckedIn: false,
+      planId: "premium"
+    },
+    {
+      id: "user-001", 
+      name: "João Silva",
+      email: "joao@gmail.com",
+      password: "123456",
+      isAdmin: false,
+      isCheckedIn: false,
+      planId: "basic"
+    }
+  ];
+}
 
-const loginLogs: LoginLog[] = [];
+// Dados de exemplo (substitua por conexão real com banco)
+let users: User[] = getInitialUsers();
+let loginLogs: LoginLog[] = [];
 
 export const storage = {
   // Usuários
   async getUserByEmail(email: string): Promise<User | null> {
-    return users.find(u => u.email === email) || null;
+    // Garantir que os dados estão inicializados
+    if (users.length === 0) {
+      users = getInitialUsers();
+    }
+    console.log('Available users:', users.map(u => u.email));
+    const user = users.find(u => u.email === email) || null;
+    console.log('getUserByEmail result for', email, ':', user ? 'found' : 'not found');
+    return user;
   },
 
   async getUser(id: string): Promise<User | null> {
@@ -56,11 +67,20 @@ export const storage = {
   },
 
   async createUser(userData: Omit<User, 'id'>): Promise<User> {
+    // Garantir que os dados estão inicializados
+    if (users.length === 0) {
+      users = getInitialUsers();
+    }
+    
     const newUser = {
       ...userData,
       id: `user-${Date.now()}`,
+      planId: userData.planId || 'basic',
+      isAdmin: false,
+      isCheckedIn: false
     };
     users.push(newUser);
+    console.log('User created:', newUser.email);
     return newUser;
   },
 

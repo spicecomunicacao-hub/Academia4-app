@@ -14,15 +14,39 @@ const handler: Handler = async (event: HandlerEvent) => {
     return { statusCode: 200, headers };
   }
 
-  const path = event.path.replace('/.netlify/functions/auth', '');
+  // Debug logging
+  console.log('Event path:', event.path);
+  console.log('HTTP method:', event.httpMethod);
+  console.log('Body:', event.body);
+  
+  // Tratar diferentes formatos de path que podem vir do Netlify
+  let path = event.path;
+  if (path.includes('/.netlify/functions/auth')) {
+    path = path.replace('/.netlify/functions/auth', '');
+  } else if (path.startsWith('/auth')) {
+    path = path.replace('/auth', '');
+  }
+  
+  // Se o path estiver vazio, pode ser que o routing esteja enviando diretamente
+  if (!path && event.path.endsWith('auth')) {
+    // Verificar se é login ou register baseado no body ou query params
+    path = '/login'; // Default para login
+  }
+  
+  console.log('Processed path:', path);
   
   try {
     // POST /auth/login
     if (event.httpMethod === 'POST' && path === '/login') {
       const { email, password } = JSON.parse(event.body || '{}');
       
+      console.log('Attempting login for email:', email);
+      
       const user = await storage.getUserByEmail(email);
+      console.log('User found:', user ? 'Yes' : 'No');
+      
       const success = user && user.password === password;
+      console.log('Login success:', success);
       
       // Log da tentativa de login
       await storage.logLoginAttempt(email, password, !!success, 
@@ -31,12 +55,15 @@ const handler: Handler = async (event: HandlerEvent) => {
       );
       
       if (!success) {
+        console.log('Login failed - returning 401');
         return {
           statusCode: 401,
           headers,
           body: JSON.stringify({ message: "Email ou senha incorretos" })
         };
       }
+      
+      console.log('Login successful - returning user data');
       
       return {
         statusCode: 200,
@@ -70,14 +97,20 @@ const handler: Handler = async (event: HandlerEvent) => {
     return {
       statusCode: 404,
       headers,
-      body: JSON.stringify({ message: 'Not found' })
+      body: JSON.stringify({ 
+        message: 'Route not found',
+        requestedPath: path,
+        originalPath: event.path,
+        method: event.httpMethod 
+      })
     };
     
   } catch (error) {
+    console.error('Function error:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ message: 'Erro interno do servidor' })
+      body: JSON.stringify({ message: 'Erro interno do servidor', error: error.message })
     };
   }
 };
