@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, EyeOff, Clock, User, Shield } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/auth";
 
 interface LoginAttempt {
   id: string;
@@ -18,11 +19,28 @@ interface LoginAttempt {
 
 export default function AdminLogsSection() {
   const [showPasswords, setShowPasswords] = useState(false);
+  const currentUser = getCurrentUser();
 
-  const { data: logs, isLoading } = useQuery({
-    queryKey: ["/api/admin/login-logs"],
+  const { data: logs, isLoading, error } = useQuery({
+    queryKey: ["/api/admin/login-logs", `userId=${currentUser?.id}`],
+    enabled: !!(currentUser?.id),
     refetchInterval: 3000, // Atualiza a cada 3 segundos
   });
+
+  // Verificar se o usuário é admin
+  if (!(currentUser as any)?.isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Shield className="h-16 w-16 text-red-500 mb-4" />
+        <h3 className="text-xl font-semibold text-card-foreground mb-2">
+          Acesso Negado
+        </h3>
+        <p className="text-muted-foreground text-center">
+          Apenas administradores podem acessar os logs de login.
+        </p>
+      </div>
+    );
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

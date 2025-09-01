@@ -247,9 +247,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Login logs routes
+  // Login logs routes (apenas para admins)
   app.get("/api/admin/login-logs", async (req, res) => {
     try {
+      const { userId } = req.query;
+      if (!userId) {
+        return res.status(401).json({ message: "Acesso negado" });
+      }
+      
+      const user = await storage.getUser(userId as string);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Apenas administradores podem acessar os logs" });
+      }
+      
       const logs = await storage.getRecentLoginAttempts(100);
       res.json(logs);
     } catch (error) {

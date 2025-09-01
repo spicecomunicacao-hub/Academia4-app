@@ -83,6 +83,7 @@ export class MemStorage implements IStorage {
     this.loginAttempts = new Map();
     
     this.initializeData();
+    this.createAdminUser();
   }
 
   private initializeData() {
@@ -171,6 +172,31 @@ export class MemStorage implements IStorage {
     classList.forEach(cls => this.classes.set(cls.id, cls));
   }
 
+  private async createAdminUser() {
+    // Verificar se o admin já existe
+    const existingAdmin = await this.getUserByEmail("academiasp@gmail.com");
+    if (!existingAdmin) {
+      const adminUser: User = {
+        id: "admin-001",
+        name: "Administrador",
+        email: "academiasp@gmail.com",
+        password: "123456",
+        phone: null,
+        birthDate: null,
+        memberSince: new Date().toISOString().split('T')[0],
+        currentWeight: null,
+        targetWeight: null,
+        primaryGoal: null,
+        planId: "vip",
+        isCheckedIn: false,
+        lastCheckin: null,
+        profilePhoto: null,
+        isAdmin: true
+      };
+      this.users.set(adminUser.id, adminUser);
+    }
+  }
+
   // User methods
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
@@ -194,7 +220,8 @@ export class MemStorage implements IStorage {
       currentWeight: insertUser.currentWeight || null,
       targetWeight: insertUser.targetWeight || null,
       primaryGoal: insertUser.primaryGoal || null,
-      planId: insertUser.planId || "basic"
+      planId: insertUser.planId || "basic",
+      isAdmin: false
     };
     this.users.set(id, user);
     return user;

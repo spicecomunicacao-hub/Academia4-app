@@ -18,6 +18,7 @@ export const users = pgTable("users", {
   isCheckedIn: boolean("is_checked_in").default(false),
   lastCheckin: timestamp("last_checkin"),
   profilePhoto: text("profile_photo"),
+  isAdmin: boolean("is_admin").default(false),
 });
 
 export const plans = pgTable("plans", {

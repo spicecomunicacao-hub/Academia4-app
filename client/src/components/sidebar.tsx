@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { X, LayoutDashboard, User, Calendar, Dumbbell, CreditCard, Wrench, Clock, LogOut, Shield } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
 
 interface SidebarProps {
   activeSection: string;
@@ -10,6 +11,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeSection, onSectionChange, onLogout, isOpen, onClose }: SidebarProps) {
+  const currentUser = getCurrentUser();
+  const isAdmin = (currentUser as any)?.isAdmin;
+  
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "profile", label: "Meu Perfil", icon: User },
@@ -18,7 +22,7 @@ export default function Sidebar({ activeSection, onSectionChange, onLogout, isOp
     { id: "membership", label: "Planos", icon: CreditCard },
     { id: "equipment", label: "Equipamentos", icon: Wrench },
     { id: "checkin", label: "Check-in", icon: Clock },
-    { id: "admin", label: "Logs Admin", icon: Shield },
+    ...(isAdmin ? [{ id: "admin", label: "Logs Admin", icon: Shield }] : []),
   ];
 
   return (
