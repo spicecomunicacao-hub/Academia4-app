@@ -8,14 +8,14 @@ import Dashboard from "@/pages/dashboard";
 import NotFound from "@/pages/not-found";
 import { getCurrentUser } from "@/lib/auth";
 
-function ProtectedRoute({ component: Component }: { component: () => JSX.Element | null }) {
+function ProtectedRoute({ component: Component, section }: { component: (props?: any) => JSX.Element | null, section?: string }) {
   const currentUser = getCurrentUser();
   
   if (!currentUser) {
     return <LoginPage />;
   }
   
-  return <Component />;
+  return <Component section={section} />;
 }
 
 function Router() {
@@ -24,6 +24,9 @@ function Router() {
       <Route path="/" component={LoginPage} />
       <Route path="/dashboard">
         <ProtectedRoute component={Dashboard} />
+      </Route>
+      <Route path="/admin/logs">
+        <ProtectedRoute component={Dashboard} section="admin" />
       </Route>
       <Route component={NotFound} />
     </Switch>
