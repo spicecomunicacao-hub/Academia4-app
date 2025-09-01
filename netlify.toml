@@ -1,6 +1,9 @@
 [build]
   publish = "dist/public" 
   command = "npm install && npm run build"
+  
+[build.environment]
+  NODE_VERSION = "18"
 
 [functions]
   directory = "netlify/functions"

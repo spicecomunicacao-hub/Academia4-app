@@ -1,5 +1,5 @@
 import { Handler, HandlerEvent } from '@netlify/functions';
-import { storage } from '../../server/storage';
+import { storage } from './shared/storage';
 
 const handler: Handler = async (event: HandlerEvent) => {
   const headers = {

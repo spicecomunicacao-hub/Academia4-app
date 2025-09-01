@@ -1,6 +1,6 @@
 import { Handler, HandlerEvent } from '@netlify/functions';
-import { storage } from '../../server/storage';
-import { insertUserSchema } from '../../shared/schema';
+import { storage } from './shared/storage';
+import { insertUserSchema } from './shared/schema';
 
 const handler: Handler = async (event: HandlerEvent) => {
   // Handle CORS
