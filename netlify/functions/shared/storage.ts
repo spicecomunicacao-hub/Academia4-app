@@ -1,16 +1,8 @@
-// Storage independente para Netlify Functions
-// Usando dados em memória para demo (você pode conectar a um banco real)
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  phone?: string;
-  isAdmin?: boolean;
-  isCheckedIn?: boolean;
-  planId: string;
-}
+// Storage para Netlify Functions usando banco PostgreSQL
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+import { users, plans, classes, classBookings, workouts, equipment, checkins } from '../../../shared/schema';
+import { eq } from 'drizzle-orm';
 
 export interface LoginLog {
   id: string;
@@ -21,78 +13,71 @@ export interface LoginLog {
   ip?: string;
 }
 
-// Função para garantir que os dados estejam sempre disponíveis
-function getInitialUsers(): User[] {
-  return [
-    {
-      id: "admin-001",
-      name: "Administrador",
-      email: "admin@gmail.com",
-      password: "123456",
-      isAdmin: true,
-      isCheckedIn: false,
-      planId: "premium"
-    },
-    {
-      id: "user-001", 
-      name: "João Silva",
-      email: "joao@gmail.com",
-      password: "123456",
-      isAdmin: false,
-      isCheckedIn: false,
-      planId: "basic"
-    }
-  ];
+// Configuração da conexão com o banco
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is required for Netlify functions');
 }
 
-// Dados de exemplo (substitua por conexão real com banco)
-let users: User[] = getInitialUsers();
+const sql = neon(process.env.DATABASE_URL);
+const db = drizzle(sql);
+
+// Storage em memória para logs (temporário)
 let loginLogs: LoginLog[] = [];
 
 export const storage = {
   // Usuários
-  async getUserByEmail(email: string): Promise<User | null> {
-    // Garantir que os dados estão inicializados
-    if (users.length === 0) {
-      users = getInitialUsers();
+  async getUserByEmail(email: string): Promise<any | null> {
+    try {
+      const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      const user = result[0] || null;
+      console.log('getUserByEmail result for', email, ':', user ? 'found' : 'not found');
+      return user;
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      return null;
     }
-    console.log('Available users:', users.map(u => u.email));
-    const user = users.find(u => u.email === email) || null;
-    console.log('getUserByEmail result for', email, ':', user ? 'found' : 'not found');
-    return user;
   },
 
-  async getUser(id: string): Promise<User | null> {
-    return users.find(u => u.id === id) || null;
-  },
-
-  async createUser(userData: Omit<User, 'id'>): Promise<User> {
-    // Garantir que os dados estão inicializados
-    if (users.length === 0) {
-      users = getInitialUsers();
+  async getUser(id: string): Promise<any | null> {
+    try {
+      const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error getting user:', error);
+      return null;
     }
-    
-    const newUser = {
-      ...userData,
-      id: `user-${Date.now()}`,
-      planId: userData.planId || 'basic',
-      isAdmin: false,
-      isCheckedIn: false
-    };
-    users.push(newUser);
-    console.log('User created:', newUser.email);
-    return newUser;
   },
 
-  async updateUser(id: string, updates: Partial<User>): Promise<User | null> {
-    const index = users.findIndex(u => u.id === id);
-    if (index === -1) return null;
-    
-    users[index] = { ...users[index], ...updates };
-    return users[index];
+  async createUser(userData: any): Promise<any> {
+    try {
+      const result = await db.insert(users).values({
+        ...userData,
+        memberSince: new Date().toISOString().split('T')[0],
+        isCheckedIn: false,
+        lastCheckin: null,
+        profilePhoto: null,
+        planId: userData.planId || 'basic',
+        isAdmin: false
+      }).returning();
+      console.log('User created:', userData.email);
+      return result[0];
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
   },
 
-  // Logs de login
+  async updateUser(id: string, updates: any): Promise<any | null> {
+    try {
+      const result = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return null;
+    }
+  },
+
+  // Logs de login (em memória por enquanto)
   async logLoginAttempt(
     email: string,
     password: string,
@@ -109,6 +94,7 @@ export const storage = {
       ip
     };
     loginLogs.push(log);
+    console.log('Login attempt logged:', { email, success });
   },
 
   async getRecentLoginAttempts(limit: number = 100): Promise<LoginLog[]> {
@@ -117,36 +103,113 @@ export const storage = {
       .slice(0, limit);
   },
 
-  // Dados estáticos para demonstração
+  // Métodos de dados usando banco real
   async getWorkouts(userId: string): Promise<any[]> {
-    return [];
+    try {
+      return await db.select().from(workouts).where(eq(workouts.userId, userId));
+    } catch (error) {
+      console.error('Error getting workouts:', error);
+      return [];
+    }
   },
 
   async getCheckins(userId: string): Promise<any[]> {
-    return [];
+    try {
+      return await db.select().from(checkins).where(eq(checkins.userId, userId));
+    } catch (error) {
+      console.error('Error getting checkins:', error);
+      return [];
+    }
   },
 
   async getClassBookings(userId: string): Promise<any[]> {
-    return [];
+    try {
+      return await db.select().from(classBookings).where(eq(classBookings.userId, userId));
+    } catch (error) {
+      console.error('Error getting class bookings:', error);
+      return [];
+    }
   },
 
   async getClasses(): Promise<any[]> {
-    return [];
+    try {
+      return await db.select().from(classes);
+    } catch (error) {
+      console.error('Error getting classes:', error);
+      return [];
+    }
   },
 
   async getClassesByDate(date: string): Promise<any[]> {
-    return [];
+    try {
+      return await db.select().from(classes).where(eq(classes.date, date));
+    } catch (error) {
+      console.error('Error getting classes by date:', error);
+      return [];
+    }
   },
 
   async getClass(id: string): Promise<any | null> {
-    return null;
+    try {
+      const result = await db.select().from(classes).where(eq(classes.id, id)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error getting class:', error);
+      return null;
+    }
   },
 
   async createClassBooking(userId: string, classId: string): Promise<any> {
-    return { id: `booking-${Date.now()}`, userId, classId };
+    try {
+      const result = await db.insert(classBookings).values({
+        userId,
+        classId,
+        bookingDate: new Date(),
+        status: 'booked'
+      }).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating class booking:', error);
+      throw error;
+    }
   },
 
   async cancelClassBooking(userId: string, classId: string): Promise<boolean> {
-    return true;
+    try {
+      await db.update(classBookings)
+        .set({ status: 'cancelled' })
+        .where(eq(classBookings.userId, userId) && eq(classBookings.classId, classId));
+      return true;
+    } catch (error) {
+      console.error('Error cancelling class booking:', error);
+      return false;
+    }
   }
 };
+
+// Inicializar dados básicos no banco (apenas se necessário)
+export async function initializeDatabase() {
+  try {
+    // Verificar se já existe o usuário admin
+    const existingAdmin = await storage.getUserByEmail('admin@gmail.com');
+    
+    if (!existingAdmin) {
+      console.log('Creating admin user...');
+      await storage.createUser({
+        name: 'Administrador',
+        email: 'admin@gmail.com',
+        password: '123456',
+        phone: null,
+        birthDate: null,
+        currentWeight: null,
+        targetWeight: null,
+        primaryGoal: null,
+        planId: 'premium',
+        isAdmin: true
+      });
+      console.log('Admin user created successfully');
+    }
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+}
