@@ -5,6 +5,7 @@ SportFitness is a comprehensive gym management system built as a full-stack web 
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+Preferred language: Portuguese (pt-BR)
 
 # System Architecture
 
