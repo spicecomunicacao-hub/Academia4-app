@@ -1,0 +1,1071 @@
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportFitness - Sistema de Gerenciamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                }
+            }
+        }
+    };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --radius: 8px;
+            --background: hsl(0 0% 100%);
+            --foreground: hsl(222.2 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222.2 84% 4.9%);
+            --primary: hsl(221.2 83.2% 53.3%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(210 40% 96%);
+            --secondary-foreground: hsl(222.2 47.4% 11.2%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215.4 16.3% 46.9%);
+            --accent: hsl(210 40% 96%);
+            --accent-foreground: hsl(222.2 47.4% 11.2%);
+            --destructive: hsl(0 84.2% 60.2%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214.3 31.8% 91.4%);
+            --input: hsl(214.3 31.8% 91.4%);
+            --ring: hsl(221.2 83.2% 53.3%);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar-hidden {
+            transform: translateX(-100%);
+        }
+        .main-content-expanded {
+            margin-left: 0;
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground">
+    <!-- @COMPONENT: NavigationSidebar [collapsible, mobile-responsive] -->
+    <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-primary text-primary-foreground transform transition-transform duration-300 ease-in-out z-50 lg:translate-x-0">
+        <div class="flex items-center justify-between p-4 border-b border-primary-foreground/20">
+            <h1 class="text-xl font-bold">SportFitness</h1>
+            <button id="closeSidebar" class="lg:hidden">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-6">
+            <a href="#" data-section="dashboard" class="nav-item flex items-center px-4 py-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors border-r-2 border-primary-foreground">
+                <i class="fas fa-tachometer-alt mr-3"></i>
+                Dashboard
+            </a>
+            <a href="#" data-section="profile" class="nav-item flex items-center px-4 py-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors">
+                <i class="fas fa-user mr-3"></i>
+                Meu Perfil
+            </a>
+            <a href="#" data-section="classes" class="nav-item flex items-center px-4 py-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors">
+                <i class="fas fa-calendar-alt mr-3"></i>
+                Aulas
+            </a>
+            <a href="#" data-section="workouts" class="nav-item flex items-center px-4 py-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors">
+                <i class="fas fa-dumbbell mr-3"></i>
+                Treinos
+            </a>
+            <a href="#" data-section="membership" class="nav-item flex items-center px-4 py-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors">
+                <i class="fas fa-credit-card mr-3"></i>
+                Planos
+            </a>
+            <a href="#" data-section="equipment" class="nav-item flex items-center px-4 py-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors">
+                <i class="fas fa-tools mr-3"></i>
+                Equipamentos
+            </a>
+            <a href="#" data-section="checkin" class="nav-item flex items-center px-4 py-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors">
+                <i class="fas fa-clock mr-3"></i>
+                Check-in
+            </a>
+        </nav>
+
+        <div class="absolute bottom-4 left-4 right-4">
+            <button id="logoutBtn" class="w-full flex items-center justify-center px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Sair
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: NavigationSidebar -->
+
+    <!-- Mobile menu button -->
+    <button id="menuBtn" class="fixed top-4 left-4 z-40 lg:hidden bg-primary text-primary-foreground p-2 rounded-md">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- @COMPONENT: MainContent [responsive layout with multiple sections] -->
+    <div id="mainContent" class="ml-0 lg:ml-64 min-h-screen transition-all duration-300 ease-in-out">
+        <!-- Header -->
+        <header class="bg-card border-b border-border p-4 lg:p-6">
+            <div class="flex items-center justify-between">
+                <h2 id="pageTitle" class="text-2xl font-semibold text-card-foreground">Dashboard</h2>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-muted-foreground">Bem-vindo, <span data-bind="user.name" data-mock="true">João Silva</span></span>
+                    <!-- Profile photo placeholder with fitness theme -->
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-primary-foreground"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- @COMPONENT: DashboardSection [default active section] -->
+        <section id="dashboard-section" class="content-section p-4 lg:p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Stats Cards -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Treinos este Mês</p>
+                            <p class="text-2xl font-bold text-card-foreground" data-bind="stats.workoutsThisMonth" data-mock="true">12</p>
+                        </div>
+                        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-dumbbell text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Aulas Agendadas</p>
+                            <p class="text-2xl font-bold text-card-foreground" data-bind="stats.scheduledClasses" data-mock="true">3</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-check text-green-500"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Plano Atual</p>
+                            <p class="text-lg font-semibold text-card-foreground" data-bind="membership.plan" data-mock="true">Premium</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-crown text-yellow-500"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Dias até Renovação</p>
+                            <p class="text-2xl font-bold text-card-foreground" data-bind="membership.daysUntilRenewal" data-mock="true">15</p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-times text-orange-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Recent Activity -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <h3 class="text-lg font-semibold mb-4 text-card-foreground">Atividade Recente</h3>
+                    <div class="space-y-4">
+                        <!-- @MAP: recentActivities.map(activity => ( -->
+                        <div class="flex items-center space-x-3" data-mock="true">
+                            <div class="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-card-foreground">Treino de Peito e Tríceps</p>
+                                <p class="text-xs text-muted-foreground">Hoje às 14:30</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3" data-mock="true">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-calendar text-primary text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-card-foreground">Aula de Yoga agendada</p>
+                                <p class="text-xs text-muted-foreground">Amanhã às 19:00</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3" data-mock="true">
+                            <div class="w-8 h-8 bg-yellow-500/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-trophy text-yellow-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-card-foreground">Meta de 10 treinos atingida!</p>
+                                <p class="text-xs text-muted-foreground">Ontem</p>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <h3 class="text-lg font-semibold mb-4 text-card-foreground">Ações Rápidas</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="flex flex-col items-center p-4 bg-primary/5 rounded-lg hover:bg-primary/10 transition-colors" data-event="click:handleQuickCheckin">
+                            <i class="fas fa-sign-in-alt text-primary text-xl mb-2"></i>
+                            <span class="text-sm font-medium text-card-foreground">Check-in</span>
+                        </button>
+                        <button class="flex flex-col items-center p-4 bg-green-500/5 rounded-lg hover:bg-green-500/10 transition-colors" data-event="click:handleBookClass">
+                            <i class="fas fa-plus text-green-500 text-xl mb-2"></i>
+                            <span class="text-sm font-medium text-card-foreground">Agendar Aula</span>
+                        </button>
+                        <button class="flex flex-col items-center p-4 bg-orange-500/5 rounded-lg hover:bg-orange-500/10 transition-colors" data-event="click:handleNewWorkout">
+                            <i class="fas fa-play text-orange-500 text-xl mb-2"></i>
+                            <span class="text-sm font-medium text-card-foreground">Novo Treino</span>
+                        </button>
+                        <button class="flex flex-col items-center p-4 bg-purple-500/5 rounded-lg hover:bg-purple-500/10 transition-colors" data-event="click:handleViewProgress">
+                            <i class="fas fa-chart-line text-purple-500 text-xl mb-2"></i>
+                            <span class="text-sm font-medium text-card-foreground">Ver Progresso</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: DashboardSection -->
+
+        <!-- @COMPONENT: ProfileSection [user profile management] -->
+        <section id="profile-section" class="content-section hidden p-4 lg:p-6">
+            <div class="max-w-4xl">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Profile Photo and Basic Info -->
+                    <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <div class="text-center">
+                            <!-- Modern fitness-focused profile photo -->
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400" alt="Foto do perfil do usuário" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover" data-mock-image="true" data-implementation="User profile photo upload component" />
+                            <h3 class="text-xl font-semibold text-card-foreground" data-bind="user.name" data-mock="true">João Silva</h3>
+                            <p class="text-muted-foreground" data-bind="user.memberSince" data-mock="true">Membro desde 2023</p>
+                            <button class="mt-3 text-sm text-primary hover:underline" data-event="click:handlePhotoUpload">Alterar Foto</button>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="lg:col-span-2 bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <h3 class="text-lg font-semibold mb-4 text-card-foreground">Informações Pessoais</h3>
+                        <form class="space-y-4" data-event="submit:handleProfileUpdate">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-1">Nome Completo</label>
+                                    <input type="text" value="João Silva" data-bind="user.fullName" class="w-full p-2 border border-input rounded-md bg-background" data-mock="true" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-1">Email</label>
+                                    <input type="email" value="joao.silva@email.com" data-bind="user.email" class="w-full p-2 border border-input rounded-md bg-background" data-mock="true" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-1">Telefone</label>
+                                    <input type="tel" value="(11) 99999-9999" data-bind="user.phone" class="w-full p-2 border border-input rounded-md bg-background" data-mock="true" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-1">Data de Nascimento</label>
+                                    <input type="date" value="1990-05-15" data-bind="user.birthDate" class="w-full p-2 border border-input rounded-md bg-background" data-mock="true" />
+                                </div>
+                            </div>
+                            <button type="submit" class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
+                                Salvar Alterações
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Fitness Goals -->
+                <div class="mt-6 bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <h3 class="text-lg font-semibold mb-4 text-card-foreground">Objetivos Fitness</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-card-foreground mb-1">Objetivo Principal</label>
+                            <select class="w-full p-2 border border-input rounded-md bg-background" data-bind="user.primaryGoal" data-mock="true">
+                                <option>Perda de Peso</option>
+                                <option selected>Ganho de Massa</option>
+                                <option>Condicionamento</option>
+                                <option>Reabilitação</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-card-foreground mb-1">Peso Atual (kg)</label>
+                            <input type="number" value="75" data-bind="user.currentWeight" class="w-full p-2 border border-input rounded-md bg-background" data-mock="true" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-card-foreground mb-1">Peso Meta (kg)</label>
+                            <input type="number" value="80" data-bind="user.targetWeight" class="w-full p-2 border border-input rounded-md bg-background" data-mock="true" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: ProfileSection -->
+
+        <!-- @COMPONENT: ClassesSection [class scheduling and booking] -->
+        <section id="classes-section" class="content-section hidden p-4 lg:p-6">
+            <div class="mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h3 class="text-xl font-semibold text-card-foreground">Agenda de Aulas</h3>
+                    <div class="flex space-x-2">
+                        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">Hoje</button>
+                        <button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">Esta Semana</button>
+                        <button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">Próximo Mês</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Class Schedule Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- @MAP: classes.map(classItem => ( -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm" data-mock="true">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h4 class="font-semibold text-card-foreground">Yoga Flow</h4>
+                            <p class="text-sm text-muted-foreground">com Ana Costa</p>
+                        </div>
+                        <span class="px-2 py-1 bg-green-500/10 text-green-600 text-xs rounded-full">Disponível</span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>19:00 - 20:00</span>
+                        </div>
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-users mr-2"></i>
+                            <span>8/15 participantes</span>
+                        </div>
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>Sala 2</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition-colors" data-event="click:handleBookClass" data-implementation="Should check availability and user schedule conflicts">
+                        Agendar
+                    </button>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm" data-mock="true">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h4 class="font-semibold text-card-foreground">Crossfit</h4>
+                            <p class="text-sm text-muted-foreground">com Carlos Lima</p>
+                        </div>
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-600 text-xs rounded-full">Agendado</span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>06:00 - 07:00</span>
+                        </div>
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-users mr-2"></i>
+                            <span>12/12 participantes</span>
+                        </div>
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>Área Funcional</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-destructive text-destructive-foreground py-2 rounded-md hover:bg-destructive/90 transition-colors" data-event="click:handleCancelClass">
+                        Cancelar
+                    </button>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm" data-mock="true">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h4 class="font-semibold text-card-foreground">Pilates</h4>
+                            <p class="text-sm text-muted-foreground">com Maria Santos</p>
+                        </div>
+                        <span class="px-2 py-1 bg-red-500/10 text-red-600 text-xs rounded-full">Lotado</span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>18:00 - 19:00</span>
+                        </div>
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-users mr-2"></i>
+                            <span>20/20 participantes</span>
+                        </div>
+                        <div class="flex items-center text-sm text-muted-foreground">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>Sala 1</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-secondary text-secondary-foreground py-2 rounded-md cursor-not-allowed" disabled>
+                        Lista de Espera
+                    </button>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </section>
+        <!-- @END_COMPONENT: ClassesSection -->
+
+        <!-- @COMPONENT: WorkoutsSection [workout tracking and history] -->
+        <section id="workouts-section" class="content-section hidden p-4 lg:p-6">
+            <div class="mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h3 class="text-xl font-semibold text-card-foreground">Meus Treinos</h3>
+                    <button class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors" data-event="click:handleNewWorkout">
+                        <i class="fas fa-plus mr-2"></i>
+                        Novo Treino
+                    </button>
+                </div>
+            </div>
+
+            <!-- Workout Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-fire text-primary text-xl"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-card-foreground" data-bind="workoutStats.totalCalories" data-mock="true">2,450</p>
+                        <p class="text-sm text-muted-foreground">Calorias Queimadas</p>
+                    </div>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-stopwatch text-green-500 text-xl"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-card-foreground" data-bind="workoutStats.totalTime" data-mock="true">24h 30m</p>
+                        <p class="text-sm text-muted-foreground">Tempo Total</p>
+                    </div>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-trophy text-orange-500 text-xl"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-card-foreground" data-bind="workoutStats.streak" data-mock="true">7</p>
+                        <p class="text-sm text-muted-foreground">Sequência de Dias</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Workouts -->
+            <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                <h4 class="text-lg font-semibold mb-4 text-card-foreground">Treinos Recentes</h4>
+                <div class="space-y-4">
+                    <!-- @MAP: recentWorkouts.map(workout => ( -->
+                    <div class="flex items-center justify-between p-4 bg-muted rounded-lg" data-mock="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-dumbbell text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-card-foreground">Treino de Peito e Tríceps</p>
+                                <p class="text-sm text-muted-foreground">Hoje • 45 min • 320 cal</p>
+                            </div>
+                        </div>
+                        <button class="text-primary hover:text-primary/80" data-event="click:handleViewWorkout">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-muted rounded-lg" data-mock="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-running text-green-500"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-card-foreground">Cardio HIIT</p>
+                                <p class="text-sm text-muted-foreground">Ontem • 30 min • 280 cal</p>
+                            </div>
+                        </div>
+                        <button class="text-primary hover:text-primary/80" data-event="click:handleViewWorkout">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-muted rounded-lg" data-mock="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-weight-hanging text-purple-500"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-card-foreground">Treino de Pernas</p>
+                                <p class="text-sm text-muted-foreground">2 dias atrás • 60 min • 400 cal</p>
+                            </div>
+                        </div>
+                        <button class="text-primary hover:text-primary/80" data-event="click:handleViewWorkout">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: WorkoutsSection -->
+
+        <!-- @COMPONENT: MembershipSection [plan management and payments] -->
+        <section id="membership-section" class="content-section hidden p-4 lg:p-6">
+            <div class="max-w-4xl">
+                <!-- Current Plan -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm mb-6">
+                    <h3 class="text-lg font-semibold mb-4 text-card-foreground">Plano Atual</h3>
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                        <div class="mb-4 lg:mb-0">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-crown text-yellow-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xl font-bold text-card-foreground" data-bind="membership.planName" data-mock="true">Premium</p>
+                                    <p class="text-muted-foreground" data-bind="membership.planDescription" data-mock="true">Acesso completo + aulas ilimitadas</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-card-foreground" data-bind="membership.monthlyPrice" data-mock="true">R$ 129,90</p>
+                            <p class="text-sm text-muted-foreground">por mês</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-muted rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-muted-foreground">Próxima cobrança</span>
+                            <span class="text-sm font-medium text-card-foreground" data-bind="membership.nextBilling" data-mock="true">25/02/2024</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Método de pagamento</span>
+                            <span class="text-sm font-medium text-card-foreground" data-bind="membership.paymentMethod" data-mock="true">•••• 1234</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Plans -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <h3 class="text-lg font-semibold mb-6 text-card-foreground">Outros Planos Disponíveis</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- @MAP: availablePlans.map(plan => ( -->
+                        <div class="border border-border rounded-lg p-6 hover:shadow-md transition-shadow" data-mock="true">
+                            <div class="text-center mb-4">
+                                <h4 class="font-semibold text-lg text-card-foreground">Básico</h4>
+                                <p class="text-3xl font-bold text-primary mt-2">R$ 79,90</p>
+                                <p class="text-sm text-muted-foreground">por mês</p>
+                            </div>
+                            <ul class="space-y-2 mb-6">
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Acesso à musculação
+                                </li>
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Cardio equipment
+                                </li>
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-times text-red-500 mr-2"></i>
+                                    Aulas em grupo
+                                </li>
+                            </ul>
+                            <button class="w-full py-2 border border-border text-card-foreground rounded-md hover:bg-muted transition-colors">
+                                Selecionar
+                            </button>
+                        </div>
+
+                        <div class="border-2 border-primary rounded-lg p-6 relative hover:shadow-md transition-shadow" data-mock="true">
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                                <span class="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">ATUAL</span>
+                            </div>
+                            <div class="text-center mb-4">
+                                <h4 class="font-semibold text-lg text-card-foreground">Premium</h4>
+                                <p class="text-3xl font-bold text-primary mt-2">R$ 129,90</p>
+                                <p class="text-sm text-muted-foreground">por mês</p>
+                            </div>
+                            <ul class="space-y-2 mb-6">
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Acesso à musculação
+                                </li>
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Aulas em grupo ilimitadas
+                                </li>
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Personal trainer 2x/mês
+                                </li>
+                            </ul>
+                            <button class="w-full py-2 bg-primary text-primary-foreground rounded-md cursor-not-allowed" disabled>
+                                Plano Atual
+                            </button>
+                        </div>
+
+                        <div class="border border-border rounded-lg p-6 hover:shadow-md transition-shadow" data-mock="true">
+                            <div class="text-center mb-4">
+                                <h4 class="font-semibold text-lg text-card-foreground">VIP</h4>
+                                <p class="text-3xl font-bold text-primary mt-2">R$ 199,90</p>
+                                <p class="text-sm text-muted-foreground">por mês</p>
+                            </div>
+                            <ul class="space-y-2 mb-6">
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Todos os benefícios Premium
+                                </li>
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Personal trainer ilimitado
+                                </li>
+                                <li class="flex items-center text-sm text-muted-foreground">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Nutricionista incluso
+                                </li>
+                            </ul>
+                            <button class="w-full py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                                Upgrade
+                            </button>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: MembershipSection -->
+
+        <!-- @COMPONENT: EquipmentSection [equipment availability tracker] -->
+        <section id="equipment-section" class="content-section hidden p-4 lg:p-6">
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-card-foreground">Disponibilidade de Equipamentos</h3>
+                <p class="text-muted-foreground">Verifique quais equipamentos estão disponíveis em tempo real</p>
+            </div>
+
+            <!-- Equipment Categories -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- @MAP: equipmentCategories.map(category => ( -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm" data-mock="true">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-semibold text-card-foreground">Esteiras</h4>
+                        <span class="px-2 py-1 bg-green-500/10 text-green-600 text-xs rounded-full">Disponível</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Esteira 1</span>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Livre</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Esteira 2</span>
+                            <span class="text-xs px-2 py-1 bg-red-500/10 text-red-600 rounded-full">Ocupada</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Esteira 3</span>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Livre</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full mt-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors" data-event="click:handleReserveEquipment">
+                        Reservar
+                    </button>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm" data-mock="true">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-semibold text-card-foreground">Supino</h4>
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-600 text-xs rounded-full">Parcial</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Supino Reto 1</span>
+                            <span class="text-xs px-2 py-1 bg-red-500/10 text-red-600 rounded-full">Ocupado</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Supino Reto 2</span>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Livre</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Supino Inclinado</span>
+                            <span class="text-xs px-2 py-1 bg-yellow-500/10 text-yellow-600 rounded-full">Manutenção</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full mt-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors" data-event="click:handleReserveEquipment">
+                        Reservar Disponível
+                    </button>
+                </div>
+
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm" data-mock="true">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-semibold text-card-foreground">Bikes</h4>
+                        <span class="px-2 py-1 bg-green-500/10 text-green-600 text-xs rounded-full">Disponível</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Bike Spinning 1</span>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Livre</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Bike Spinning 2</span>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Livre</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground">Bike Ergométrica</span>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Livre</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full mt-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors" data-event="click:handleReserveEquipment">
+                        Reservar
+                    </button>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </section>
+        <!-- @END_COMPONENT: EquipmentSection -->
+
+        <!-- @COMPONENT: CheckinSection [member check-in/out system] -->
+        <section id="checkin-section" class="content-section hidden p-4 lg:p-6">
+            <div class="max-w-2xl mx-auto">
+                <!-- Check-in Status -->
+                <div class="bg-card p-8 rounded-lg border border-border shadow-sm text-center mb-6">
+                    <!-- @STATE: isCheckedIn:boolean = false -->
+                    <div id="checkin-status" class="mb-6">
+                        <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-door-open text-green-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-card-foreground mb-2">Você está FORA da academia</h3>
+                        <p class="text-muted-foreground">Faça seu check-in para começar o treino</p>
+                    </div>
+
+                    <button id="checkinBtn" class="bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold" data-event="click:handleCheckin" data-implementation="Should update user status and log entry time">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Fazer Check-in
+                    </button>
+                </div>
+
+                <!-- Check-in History -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <h3 class="text-lg font-semibold mb-4 text-card-foreground">Histórico de Visitas</h3>
+                    <div class="space-y-4">
+                        <!-- @MAP: checkinHistory.map(visit => ( -->
+                        <div class="flex items-center justify-between p-4 bg-muted rounded-lg" data-mock="true">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-calendar text-primary"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-card-foreground">Hoje</p>
+                                    <p class="text-sm text-muted-foreground">13:45 - 15:30 (1h 45m)</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Concluído</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-muted rounded-lg" data-mock="true">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-calendar text-primary"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-card-foreground">Ontem</p>
+                                    <p class="text-sm text-muted-foreground">07:00 - 08:15 (1h 15m)</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Concluído</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-muted rounded-lg" data-mock="true">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-calendar text-primary"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-card-foreground">2 dias atrás</p>
+                                    <p class="text-sm text-muted-foreground">19:30 - 21:00 (1h 30m)</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded-full">Concluído</span>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: CheckinSection -->
+
+        <!-- @COMPONENT: LoginModal [enhanced authentication building on existing] -->
+        <div id="loginModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-card p-8 rounded-2xl shadow-lg w-96 max-w-[90vw]">
+                <h1 class="text-2xl font-bold text-center mb-4 text-primary">Academia SportFitness</h1>
+                <p class="text-center text-muted-foreground mb-6">Faça login ou cadastre-se para continuar</p>
+
+                <!-- Enhanced Auth Form -->
+                <form id="authForm" class="space-y-4">
+                    <div id="nameField" class="hidden">
+                        <input id="name" type="text" placeholder="Seu nome completo" class="w-full p-3 border border-input rounded-md bg-background" />
+                    </div>
+                    <input id="email" type="email" placeholder="Seu e-mail" class="w-full p-3 border border-input rounded-md bg-background" required />
+                    <input id="password" type="password" placeholder="Sua senha" class="w-full p-3 border border-input rounded-md bg-background" required />
+
+                    <button type="submit" id="authSubmit" class="w-full bg-primary text-primary-foreground p-3 rounded-md hover:bg-primary/90 transition-colors font-semibold">
+                        Entrar
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <button id="toggleMode" class="text-sm text-primary hover:underline">
+                        Não tem conta? Cadastre-se
+                    </button>
+                </div>
+
+                <p id="message" class="text-center mt-4 text-sm"></p>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: LoginModal -->
+    </div>
+    <!-- @END_COMPONENT: MainContent -->
+
+    <script>
+        (function() {
+            // TODO: Implement proper state management and API integration
+            
+            // Navigation functionality
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const menuBtn = document.getElementById('menuBtn');
+            const closeSidebar = document.getElementById('closeSidebar');
+            const navItems = document.querySelectorAll('.nav-item');
+            const contentSections = document.querySelectorAll('.content-section');
+            const pageTitle = document.getElementById('pageTitle');
+
+            // Mobile sidebar toggle
+            menuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('sidebar-hidden');
+            });
+
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.add('sidebar-hidden');
+            });
+
+            // Navigation between sections
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionName = item.dataset.section;
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('border-r-2', 'border-primary-foreground'));
+                    item.classList.add('border-r-2', 'border-primary-foreground');
+                    
+                    // Show corresponding section
+                    contentSections.forEach(section => section.classList.add('hidden'));
+                    const targetSection = document.getElementById(`${sectionName}-section`);
+                    if (targetSection) {
+                        targetSection.classList.remove('hidden');
+                    }
+                    
+                    // Update page title
+                    const titles = {
+                        dashboard: 'Dashboard',
+                        profile: 'Meu Perfil',
+                        classes: 'Aulas',
+                        workouts: 'Treinos',
+                        membership: 'Planos',
+                        equipment: 'Equipamentos',
+                        checkin: 'Check-in'
+                    };
+                    pageTitle.textContent = titles[sectionName] || 'SportFitness';
+                    
+                    // Close mobile sidebar after navigation
+                    if (window.innerWidth < 1024) {
+                        sidebar.classList.add('sidebar-hidden');
+                    }
+                });
+            });
+
+            // Enhanced Authentication System (building on existing)
+            const loginModal = document.getElementById('loginModal');
+            const authForm = document.getElementById('authForm');
+            const nameField = document.getElementById('nameField');
+            const toggleMode = document.getElementById('toggleMode');
+            const authSubmit = document.getElementById('authSubmit');
+            const message = document.getElementById('message');
+            
+            let isLoginMode = true;
+
+            // Check if user is already logged in
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                loginModal.style.display = 'none';
+            }
+
+            toggleMode.addEventListener('click', () => {
+                isLoginMode = !isLoginMode;
+                if (isLoginMode) {
+                    nameField.classList.add('hidden');
+                    authSubmit.textContent = 'Entrar';
+                    toggleMode.textContent = 'Não tem conta? Cadastre-se';
+                } else {
+                    nameField.classList.remove('hidden');
+                    authSubmit.textContent = 'Cadastrar';
+                    toggleMode.textContent = 'Já tem conta? Faça login';
+                }
+                message.textContent = '';
+            });
+
+            authForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                // Enhanced user management
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+                if (isLoginMode) {
+                    if (users[email] && users[email].password === password) {
+                        localStorage.setItem('currentUser', JSON.stringify(users[email]));
+                        loginModal.style.display = 'none';
+                        message.textContent = '';
+                        // TODO: Load user-specific data and update UI
+                    } else {
+                        message.textContent = "Email ou senha incorretos!";
+                        message.className = "text-center mt-4 text-destructive text-sm";
+                    }
+                } else {
+                    if (users[email]) {
+                        message.textContent = "Email já cadastrado! Use o modo login.";
+                        message.className = "text-center mt-4 text-destructive text-sm";
+                    } else {
+                        const newUser = {
+                            name: name,
+                            email: email,
+                            password: password,
+                            memberSince: new Date().toISOString().split('T')[0],
+                            plan: 'Básico',
+                            checkedIn: false
+                        };
+                        users[email] = newUser;
+                        localStorage.setItem('users', JSON.stringify(users));
+                        localStorage.setItem('currentUser', JSON.stringify(newUser));
+                        loginModal.style.display = 'none';
+                        message.textContent = '';
+                        // TODO: Initialize new user data and redirect to dashboard
+                    }
+                }
+                
+                authForm.reset();
+            });
+
+            // Check-in functionality
+            const checkinBtn = document.getElementById('checkinBtn');
+            const checkinStatus = document.getElementById('checkin-status');
+            
+            // TODO: Load user check-in status from API
+            let isCheckedIn = false;
+            
+            checkinBtn.addEventListener('click', () => {
+                isCheckedIn = !isCheckedIn;
+                updateCheckinUI();
+                // TODO: Send check-in status to backend
+            });
+
+            function updateCheckinUI() {
+                if (isCheckedIn) {
+                    checkinStatus.innerHTML = `
+                        <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-door-closed text-red-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-card-foreground mb-2">Você está NA academia</h3>
+                        <p class="text-muted-foreground">Check-in realizado às ${new Date().toLocaleTimeString('pt-BR')}</p>
+                    `;
+                    checkinBtn.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>Fazer Check-out';
+                    checkinBtn.className = 'bg-destructive text-destructive-foreground px-8 py-3 rounded-lg hover:bg-destructive/90 transition-colors text-lg font-semibold';
+                } else {
+                    checkinStatus.innerHTML = `
+                        <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-door-open text-green-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-card-foreground mb-2">Você está FORA da academia</h3>
+                        <p class="text-muted-foreground">Faça seu check-in para começar o treino</p>
+                    `;
+                    checkinBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Fazer Check-in';
+                    checkinBtn.className = 'bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold';
+                }
+            }
+
+            // Logout functionality
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('currentUser');
+                loginModal.style.display = 'flex';
+                // TODO: Clear user session and redirect to login
+            });
+
+            // Handle window resize for responsive sidebar
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    sidebar.classList.remove('sidebar-hidden');
+                } else {
+                    sidebar.classList.add('sidebar-hidden');
+                }
+            });
+
+            // Initialize responsive state
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('sidebar-hidden');
+            }
+
+            // TODO: Implement remaining functionality:
+            // - Class booking system with conflict checking
+            // - Workout tracking with exercise logging
+            // - Equipment reservation system
+            // - Payment processing integration
+            // - Real-time equipment status updates
+            // - Progress tracking and analytics
+            // - Push notifications for class reminders
+        })();
+    </script>
+</body>
+</html>
