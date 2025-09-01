@@ -176,7 +176,13 @@ export class MemStorage implements IStorage {
       memberSince: new Date().toISOString().split('T')[0],
       isCheckedIn: false,
       lastCheckin: null,
-      profilePhoto: null
+      profilePhoto: null,
+      phone: insertUser.phone || null,
+      birthDate: insertUser.birthDate || null,
+      currentWeight: insertUser.currentWeight || null,
+      targetWeight: insertUser.targetWeight || null,
+      primaryGoal: insertUser.primaryGoal || null,
+      planId: insertUser.planId || "basic"
     };
     this.users.set(id, user);
     return user;
@@ -249,7 +255,7 @@ export class MemStorage implements IStorage {
     // Update class participant count
     const cls = this.classes.get(classId);
     if (cls) {
-      cls.currentParticipants += 1;
+      cls.currentParticipants = (cls.currentParticipants || 0) + 1;
       this.classes.set(classId, cls);
     }
     
@@ -269,7 +275,7 @@ export class MemStorage implements IStorage {
     // Update class participant count
     const cls = this.classes.get(classId);
     if (cls) {
-      cls.currentParticipants = Math.max(0, cls.currentParticipants - 1);
+      cls.currentParticipants = Math.max(0, (cls.currentParticipants || 0) - 1);
       this.classes.set(classId, cls);
     }
     
@@ -289,7 +295,11 @@ export class MemStorage implements IStorage {
 
   async createWorkout(workout: InsertWorkout): Promise<Workout> {
     const id = randomUUID();
-    const newWorkout: Workout = { ...workout, id };
+    const newWorkout: Workout = { 
+      ...workout, 
+      id,
+      calories: workout.calories || null 
+    };
     this.workouts.set(id, newWorkout);
     return newWorkout;
   }

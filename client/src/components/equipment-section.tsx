@@ -35,7 +35,7 @@ export default function EquipmentSection() {
   });
 
   // Group equipment by category
-  const equipmentByCategory = equipment?.reduce((acc: any, item: any) => {
+  const equipmentByCategory = (equipment as any[])?.reduce((acc: any, item: any) => {
     if (!acc[item.category]) {
       acc[item.category] = [];
     }

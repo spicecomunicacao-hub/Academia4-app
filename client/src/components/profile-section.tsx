@@ -45,8 +45,8 @@ export default function ProfileSection() {
     e.preventDefault();
     updateUserMutation.mutate({
       ...formData,
-      currentWeight: formData.currentWeight ? parseInt(formData.currentWeight) : null,
-      targetWeight: formData.targetWeight ? parseInt(formData.targetWeight) : null,
+      currentWeight: formData.currentWeight ? parseInt(formData.currentWeight.toString()) : null,
+      targetWeight: formData.targetWeight ? parseInt(formData.targetWeight.toString()) : null,
     });
   };
 

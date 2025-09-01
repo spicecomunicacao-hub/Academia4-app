@@ -17,12 +17,12 @@ export default function DashboardStats() {
   });
 
   const currentMonth = new Date().getMonth();
-  const workoutsThisMonth = workouts?.filter((workout: any) => {
+  const workoutsThisMonth = (workouts as any[])?.filter((workout: any) => {
     const workoutMonth = new Date(workout.date).getMonth();
     return workoutMonth === currentMonth;
   }).length || 0;
 
-  const upcomingClasses = bookings?.filter((booking: any) => booking.status === "booked").length || 0;
+  const upcomingClasses = (bookings as any[])?.filter((booking: any) => booking.status === "booked").length || 0;
 
   const stats = [
     {

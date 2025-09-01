@@ -19,8 +19,8 @@ export default function RecentActivity() {
   // Create activity feed from workouts and checkins
   const activities = [];
   
-  if (workouts && workouts.length > 0) {
-    const latestWorkout = workouts[0];
+  if (workouts && (workouts as any[]).length > 0) {
+    const latestWorkout = (workouts as any[])[0];
     activities.push({
       type: "workout",
       title: latestWorkout.name,
@@ -40,7 +40,7 @@ export default function RecentActivity() {
     bgColor: "bg-primary/10",
   });
 
-  if (workouts && workouts.length >= 10) {
+  if (workouts && (workouts as any[]).length >= 10) {
     activities.push({
       type: "achievement",
       title: "Meta de 10 treinos atingida!",

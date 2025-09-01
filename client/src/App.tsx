@@ -8,7 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import NotFound from "@/pages/not-found";
 import { getCurrentUser } from "@/lib/auth";
 
-function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
+function ProtectedRoute({ component: Component }: { component: () => JSX.Element | null }) {
   const currentUser = getCurrentUser();
   
   if (!currentUser) {

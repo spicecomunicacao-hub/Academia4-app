@@ -68,8 +68,8 @@ export default function WorkoutsSection() {
   };
 
   // Calculate stats
-  const totalCalories = workouts?.reduce((sum: number, workout: any) => sum + (workout.calories || 0), 0) || 0;
-  const totalTime = workouts?.reduce((sum: number, workout: any) => sum + workout.duration, 0) || 0;
+  const totalCalories = (workouts as any[])?.reduce((sum: number, workout: any) => sum + (workout.calories || 0), 0) || 0;
+  const totalTime = (workouts as any[])?.reduce((sum: number, workout: any) => sum + workout.duration, 0) || 0;
   const totalHours = Math.floor(totalTime / 60);
   const totalMinutes = totalTime % 60;
   
@@ -239,8 +239,8 @@ export default function WorkoutsSection() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {workouts?.length > 0 ? (
-              workouts.slice(0, 5).map((workout: any, index: number) => {
+            {(workouts as any[])?.length > 0 ? (
+              (workouts as any[]).slice(0, 5).map((workout: any, index: number) => {
                 const workoutIcons = [Dumbbell, Play, Activity];
                 const colors = ["text-primary", "text-green-500", "text-purple-500"];
                 const bgColors = ["bg-primary/10", "bg-green-500/10", "bg-purple-500/10"];

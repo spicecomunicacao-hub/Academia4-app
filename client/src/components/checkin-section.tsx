@@ -41,7 +41,7 @@ export default function CheckinSection() {
   });
 
   const checkoutMutation = useMutation({
-    mutationFn: () => apiRequest("PUT", `/api/checkins/${activeCheckin?.id}/checkout`, {}),
+    mutationFn: () => apiRequest("PUT", `/api/checkins/${(activeCheckin as any)?.id}/checkout`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users", currentUser?.id, "checkins"] });
       toast({
@@ -96,7 +96,7 @@ export default function CheckinSection() {
             </h3>
             <p className="text-muted-foreground" data-testid="text-checkin-subtitle">
               {isCheckedIn
-                ? `Check-in realizado às ${activeCheckin ? formatTime(activeCheckin.checkinTime) : ""}`
+                ? `Check-in realizado às ${activeCheckin ? formatTime((activeCheckin as any).checkinTime) : ""}`
                 : "Faça seu check-in para começar o treino"}
             </p>
           </div>
@@ -128,13 +128,13 @@ export default function CheckinSection() {
 
       {/* Check-in History */}
       <Card data-testid="card-checkin-history">
-        <CardHeader>
-          <CardTitle data-testid="text-checkin-history-title">Histórico de Visitas</CardTitle>
-        </CardHeader>
+        <CardContent className="pb-0">
+          <h3 className="font-semibold text-lg mb-4" data-testid="text-checkin-history-title">Histórico de Visitas</h3>
+        </CardContent>
         <CardContent>
           <div className="space-y-4">
-            {checkinHistory?.length > 0 ? (
-              checkinHistory.slice(0, 10).map((visit: any, index: number) => (
+            {(checkinHistory as any[])?.length > 0 ? (
+              (checkinHistory as any[]).slice(0, 10).map((visit: any, index: number) => (
                 <div
                   key={visit.id}
                   className="flex items-center justify-between p-4 bg-muted rounded-lg"

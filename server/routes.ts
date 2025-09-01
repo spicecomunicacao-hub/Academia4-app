@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Aula não encontrada" });
       }
       
-      if (cls.currentParticipants >= cls.maxParticipants) {
+      if (cls.currentParticipants! >= cls.maxParticipants) {
         return res.status(400).json({ message: "Aula lotada" });
       }
       
