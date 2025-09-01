@@ -20,12 +20,19 @@ interface LoginAttempt {
 export default function AdminLogsSection() {
   const [showPasswords, setShowPasswords] = useState(false);
   const currentUser = getCurrentUser();
+  
+  console.log('Current user in AdminLogsSection:', currentUser);
 
   const { data: logs, isLoading, error } = useQuery({
     queryKey: ["/api/admin/login-logs", currentUser?.id],
-    queryFn: () => {
+    queryFn: async () => {
+      console.log('Fetching logs for user:', currentUser?.id);
       const params = new URLSearchParams({ userId: currentUser?.id || '' });
-      return fetch(`/api/admin/login-logs?${params}`).then(res => res.json());
+      const response = await fetch(`/api/admin/login-logs?${params}`);
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+      return data;
     },
     enabled: !!(currentUser?.id),
     refetchInterval: 3000, // Atualiza a cada 3 segundos
@@ -69,6 +76,21 @@ export default function AdminLogsSection() {
     }
     return password;
   };
+
+  if (error) {
+    console.error('Error fetching logs:', error);
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Shield className="h-16 w-16 text-red-500 mb-4" />
+        <h3 className="text-xl font-semibold text-card-foreground mb-2">
+          Erro ao Carregar Logs
+        </h3>
+        <p className="text-muted-foreground text-center">
+          Erro: {error?.message || 'Erro desconhecido'}
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
