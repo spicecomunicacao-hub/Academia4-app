@@ -1,8 +1,15 @@
 import { Handler, HandlerEvent } from '@netlify/functions';
-import { storage } from './shared/storage';
+import { storage, initializeDatabase } from './shared/storage';
 import { insertUserSchema } from './shared/schema';
 
 const handler: Handler = async (event: HandlerEvent) => {
+  // Inicializar banco de dados na primeira execução
+  try {
+    await initializeDatabase();
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+
   // Handle CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -20,24 +27,25 @@ const handler: Handler = async (event: HandlerEvent) => {
   console.log('Body:', event.body);
   
   // Tratar diferentes formatos de path que podem vir do Netlify
-  let path = event.path;
-  if (path.includes('/.netlify/functions/auth')) {
-    path = path.replace('/.netlify/functions/auth', '');
-  } else if (path.startsWith('/auth')) {
-    path = path.replace('/auth', '');
+  console.log('Original path:', event.path);
+  console.log('Query string params:', event.queryStringParameters);
+  
+  let action = 'login'; // default
+  
+  // Verificar se há parâmetros na URL que indicam a ação
+  if (event.queryStringParameters && event.queryStringParameters.action) {
+    action = event.queryStringParameters.action;
+  } else if (event.path.includes('register')) {
+    action = 'register';
+  } else if (event.path.includes('login')) {
+    action = 'login';
   }
   
-  // Se o path estiver vazio, pode ser que o routing esteja enviando diretamente
-  if (!path && event.path.endsWith('auth')) {
-    // Verificar se é login ou register baseado no body ou query params
-    path = '/login'; // Default para login
-  }
-  
-  console.log('Processed path:', path);
+  console.log('Detected action:', action);
   
   try {
     // POST /auth/login
-    if (event.httpMethod === 'POST' && path === '/login') {
+    if (event.httpMethod === 'POST' && action === 'login') {
       const { email, password } = JSON.parse(event.body || '{}');
       
       console.log('Attempting login for email:', email);
@@ -81,7 +89,7 @@ const handler: Handler = async (event: HandlerEvent) => {
     }
     
     // POST /auth/register
-    if (event.httpMethod === 'POST' && path === '/register') {
+    if (event.httpMethod === 'POST' && action === 'register') {
       const userData = insertUserSchema.parse(JSON.parse(event.body || '{}'));
       
       // Check if user already exists
@@ -107,7 +115,7 @@ const handler: Handler = async (event: HandlerEvent) => {
       headers,
       body: JSON.stringify({ 
         message: 'Route not found',
-        requestedPath: path,
+        requestedAction: action,
         originalPath: event.path,
         method: event.httpMethod 
       })
