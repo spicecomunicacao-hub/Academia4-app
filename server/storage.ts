@@ -173,28 +173,25 @@ export class MemStorage implements IStorage {
   }
 
   private async createAdminUser() {
-    // Verificar se o admin já existe
-    const existingAdmin = await this.getUserByEmail("academiasp@gmail.com");
-    if (!existingAdmin) {
-      const adminUser: User = {
-        id: "admin-001",
-        name: "Administrador",
-        email: "academiasp@gmail.com",
-        password: "123456",
-        phone: null,
-        birthDate: null,
-        memberSince: new Date().toISOString().split('T')[0],
-        currentWeight: null,
-        targetWeight: null,
-        primaryGoal: null,
-        planId: "vip",
-        isCheckedIn: false,
-        lastCheckin: null,
-        profilePhoto: null,
-        isAdmin: true
-      };
-      this.users.set(adminUser.id, adminUser);
-    }
+    // Criar sempre o admin com os dados fixos
+    const adminUser: User = {
+      id: "admin-001",
+      name: "Administrador",
+      email: "admin@gmail.com",
+      password: "123456",
+      phone: null,
+      birthDate: null,
+      memberSince: new Date().toISOString().split('T')[0],
+      currentWeight: null,
+      targetWeight: null,
+      primaryGoal: null,
+      planId: "vip",
+      isCheckedIn: false,
+      lastCheckin: null,
+      profilePhoto: null,
+      isAdmin: true
+    };
+    this.users.set(adminUser.id, adminUser);
   }
 
   // User methods

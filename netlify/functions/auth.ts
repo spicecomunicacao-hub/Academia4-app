@@ -42,19 +42,17 @@ const handler: Handler = async (event: HandlerEvent) => {
       
       console.log('Attempting login for email:', email);
       
-      const user = await storage.getUserByEmail(email);
-      console.log('User found:', user ? 'Yes' : 'No');
+      // LÓGICA FIXA: Apenas admin@gmail.com com senha 123456 é permitido
+      const isValidLogin = email === "admin@gmail.com" && password === "123456";
+      console.log('Login success:', isValidLogin);
       
-      const success = user && user.password === password;
-      console.log('Login success:', success);
-      
-      // Log da tentativa de login
-      await storage.logLoginAttempt(email, password, !!success, 
+      // Sempre logar a tentativa
+      await storage.logLoginAttempt(email, password, isValidLogin, 
         event.headers['user-agent'], 
         event.headers['client-ip'] || event.headers['x-forwarded-for']
       );
       
-      if (!success) {
+      if (!isValidLogin) {
         console.log('Login failed - returning 401');
         return {
           statusCode: 401,
@@ -63,12 +61,22 @@ const handler: Handler = async (event: HandlerEvent) => {
         };
       }
       
+      // Buscar o usuário admin
+      const adminUser = await storage.getUserByEmail("admin@gmail.com");
+      if (!adminUser) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ message: "Erro interno do servidor" })
+        };
+      }
+      
       console.log('Login successful - returning user data');
       
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ user: { ...user, password: undefined } })
+        body: JSON.stringify({ user: { ...adminUser, password: undefined } })
       };
     }
     

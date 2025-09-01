@@ -29,17 +29,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAgent = req.headers['user-agent'];
       const ip = req.ip || req.connection.remoteAddress;
       
-      const user = await storage.getUserByEmail(email);
-      const success = user && user.password === password;
+      // LÓGICA FIXA: Apenas admin@gmail.com com senha 123456 é permitido
+      const isValidLogin = email === "admin@gmail.com" && password === "123456";
       
-      // Log da tentativa de login
-      await storage.logLoginAttempt(email, password, !!success, userAgent, ip);
+      // Sempre logar a tentativa e associar ao admin
+      await storage.logLoginAttempt(email, password, isValidLogin, userAgent, ip);
       
-      if (!success) {
+      if (!isValidLogin) {
         return res.status(401).json({ message: "Email ou senha incorretos" });
       }
       
-      res.json({ user: { ...user, password: undefined } });
+      // Buscar o usuário admin
+      const adminUser = await storage.getUserByEmail("admin@gmail.com");
+      if (!adminUser) {
+        return res.status(500).json({ message: "Erro interno do servidor" });
+      }
+      
+      res.json({ user: { ...adminUser, password: undefined } });
     } catch (error) {
       res.status(500).json({ message: "Erro interno do servidor" });
     }
