@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { X, LayoutDashboard, User, Calendar, Dumbbell, CreditCard, Wrench, Clock, LogOut } from "lucide-react";
+import { X, LayoutDashboard, User, Calendar, Dumbbell, CreditCard, Wrench, Clock, LogOut, Shield } from "lucide-react";
 
 interface SidebarProps {
   activeSection: string;
@@ -18,6 +18,7 @@ export default function Sidebar({ activeSection, onSectionChange, onLogout, isOp
     { id: "membership", label: "Planos", icon: CreditCard },
     { id: "equipment", label: "Equipamentos", icon: Wrench },
     { id: "checkin", label: "Check-in", icon: Clock },
+    { id: "admin", label: "Logs Admin", icon: Shield },
   ];
 
   return (

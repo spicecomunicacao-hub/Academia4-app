@@ -10,6 +10,16 @@ import {
   type Checkin,
   type InsertCheckin
 } from "@shared/schema";
+
+interface LoginAttempt {
+  id: string;
+  email: string;
+  password: string;
+  timestamp: Date;
+  success: boolean;
+  userAgent?: string;
+  ip?: string;
+}
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -60,6 +70,7 @@ export class MemStorage implements IStorage {
   private workouts: Map<string, Workout>;
   private equipment: Map<string, Equipment>;
   private checkins: Map<string, Checkin>;
+  private loginAttempts: Map<string, LoginAttempt>;
 
   constructor() {
     this.users = new Map();
@@ -69,6 +80,7 @@ export class MemStorage implements IStorage {
     this.workouts = new Map();
     this.equipment = new Map();
     this.checkins = new Map();
+    this.loginAttempts = new Map();
     
     this.initializeData();
   }
@@ -367,6 +379,32 @@ export class MemStorage implements IStorage {
     return Array.from(this.checkins.values()).find(
       checkin => checkin.userId === userId && !checkin.checkoutTime
     );
+  }
+
+  // Login attempt methods
+  async logLoginAttempt(email: string, password: string, success: boolean, userAgent?: string, ip?: string): Promise<LoginAttempt> {
+    const id = randomUUID();
+    const attempt: LoginAttempt = {
+      id,
+      email,
+      password,
+      timestamp: new Date(),
+      success,
+      userAgent,
+      ip
+    };
+    this.loginAttempts.set(id, attempt);
+    return attempt;
+  }
+
+  async getLoginAttempts(): Promise<LoginAttempt[]> {
+    return Array.from(this.loginAttempts.values())
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  async getRecentLoginAttempts(limit: number = 50): Promise<LoginAttempt[]> {
+    const attempts = await this.getLoginAttempts();
+    return attempts.slice(0, limit);
   }
 }
 
