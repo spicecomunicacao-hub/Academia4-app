@@ -20,25 +20,40 @@ interface LoginAttempt {
 export default function AdminLogsSection() {
   const [showPasswords, setShowPasswords] = useState(false);
   const currentUser = getCurrentUser();
-  
-  console.log('Current user in AdminLogsSection:', currentUser);
 
   const { data: logs, isLoading, error } = useQuery({
     queryKey: ["/api/admin/login-logs", currentUser?.id],
     queryFn: async () => {
-      console.log('Fetching logs for user:', currentUser?.id);
       const params = new URLSearchParams({ userId: currentUser?.id || '' });
       const response = await fetch(`/api/admin/login-logs?${params}`);
-      console.log('Response status:', response.status);
-      const data = await response.json();
-      console.log('Response data:', data);
-      return data;
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
     },
-    enabled: !!(currentUser?.id),
+    enabled: !!(currentUser?.id && (currentUser as any)?.isAdmin),
     refetchInterval: 3000, // Atualiza a cada 3 segundos
   });
 
-  // Verificar se o usuário é admin
+  // Verificar se o usuário está logado e é admin
+  if (!currentUser) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Shield className="h-16 w-16 text-orange-500 mb-4" />
+        <h3 className="text-xl font-semibold text-card-foreground mb-2">
+          Login Necessário
+        </h3>
+        <p className="text-muted-foreground text-center">
+          Você precisa fazer login como administrador para acessar os logs.
+          <br />
+          <span className="text-sm mt-2 block font-mono bg-muted px-2 py-1 rounded">
+            admin@gmail.com / 123456
+          </span>
+        </p>
+      </div>
+    );
+  }
+
   if (!(currentUser as any)?.isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -48,6 +63,10 @@ export default function AdminLogsSection() {
         </h3>
         <p className="text-muted-foreground text-center">
           Apenas administradores podem acessar os logs de login.
+          <br />
+          <span className="text-sm mt-2 block">
+            Usuário atual: {currentUser?.email}
+          </span>
         </p>
       </div>
     );

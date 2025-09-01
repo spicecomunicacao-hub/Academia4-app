@@ -15,9 +15,9 @@ import { getCurrentUser, clearCurrentUser } from "@/lib/auth";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function Dashboard() {
+export default function Dashboard({ section }: { section?: string }) {
   const [, setLocation] = useLocation();
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState(section || "dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUser = getCurrentUser();
 
