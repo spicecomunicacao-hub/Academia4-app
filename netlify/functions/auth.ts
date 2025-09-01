@@ -26,26 +26,15 @@ const handler: Handler = async (event: HandlerEvent) => {
   console.log('HTTP method:', event.httpMethod);
   console.log('Body:', event.body);
   
-  // Tratar diferentes formatos de path que podem vir do Netlify
-  console.log('Original path:', event.path);
-  console.log('Query string params:', event.queryStringParameters);
-  
-  let action = 'login'; // default
-  
-  // Verificar se há parâmetros na URL que indicam a ação
-  if (event.queryStringParameters && event.queryStringParameters.action) {
-    action = event.queryStringParameters.action;
-  } else if (event.path.includes('register')) {
-    action = 'register';
-  } else if (event.path.includes('login')) {
-    action = 'login';
-  }
-  
-  console.log('Detected action:', action);
+  console.log('Processing auth request for path:', event.path);
   
   try {
-    // POST /auth/login
-    if (event.httpMethod === 'POST' && action === 'login') {
+    // Verificar se é uma requisição de login
+    const isLoginRequest = event.httpMethod === 'POST' && 
+      (event.path.includes('login') || event.path.endsWith('auth') || 
+       (event.body && JSON.parse(event.body || '{}').email));
+    
+    if (isLoginRequest) {
       const { email, password } = JSON.parse(event.body || '{}');
       
       console.log('Attempting login for email:', email);
@@ -89,7 +78,7 @@ const handler: Handler = async (event: HandlerEvent) => {
     }
     
     // POST /auth/register
-    if (event.httpMethod === 'POST' && action === 'register') {
+    if (event.httpMethod === 'POST' && event.path.includes('register')) {
       const userData = insertUserSchema.parse(JSON.parse(event.body || '{}'));
       
       // Check if user already exists
@@ -115,7 +104,6 @@ const handler: Handler = async (event: HandlerEvent) => {
       headers,
       body: JSON.stringify({ 
         message: 'Route not found',
-        requestedAction: action,
         originalPath: event.path,
         method: event.httpMethod 
       })
