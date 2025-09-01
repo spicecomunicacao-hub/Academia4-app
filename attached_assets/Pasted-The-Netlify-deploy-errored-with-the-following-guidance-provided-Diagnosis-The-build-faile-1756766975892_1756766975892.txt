@@ -1,0 +1,65 @@
+The Netlify deploy errored, with the following guidance provided:
+
+**Diagnosis:**
+The build failed due to the command `vite build` not being found at line 74 in the build script.
+
+**Solution:**
+1. Ensure that the `vite` package is listed as a dependency in the `package.json` file or committed to the repository.
+2. If `vite` is a development dependency, make sure it is added with `npm install vite --save-dev`.
+3. If `vite` needs to be used as an external package in the build script, verify that it is added to the appropriate external configuration, such as `build.rollupOptions.external`.
+
+The relevant error logs are:
+
+Line 54: [36m[1m❯ Config file[22m[39m
+Line 55:   /opt/build/repo/netlify.toml
+Line 56: [36m[1m​[22m[39m
+Line 57: [36m[1m❯ Context[22m[39m
+Line 58:   production
+Line 59: [96m[1m​[22m[39m
+Line 60: [96m[1mbuild.command from netlify.toml                               [22m[39m
+Line 61: [96m[1m────────────────────────────────────────────────────────────────[22m[39m
+Line 62: ​
+Line 63: [36m$ npm install && npm run build[39m
+Line 64: Failed during stage 'building site': Build script returned non-zero exit code: 2
+Line 65: up to date, audited 639 packages in 1s
+Line 66: 103 packages are looking for funding
+Line 67:   run `npm fund` for details
+Line 68: 3 low severity vulnerabilities
+Line 69: To address all issues, run:
+Line 70:   npm audit fix
+Line 71: Run `npm audit` for details.
+Line 72: > rest-express@1.0.0 build
+Line 73: > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+Line 74: sh: 1: vite: not found
+Line 75: [91m[1m​[22m[39m
+Line 76: [91m[1m"build.command" failed                                        [22m[39m
+Line 77: [91m[1m────────────────────────────────────────────────────────────────[22m[39m
+Line 78: ​
+Line 79:   [31m[1mError message[22m[39m
+Line 80:   Command failed with exit code 127: npm install && npm run build
+Line 81: ​
+Line 82:   [31m[1mError location[22m[39m
+Line 83:   In build.command from netlify.toml:
+Line 84:   npm install && npm run build
+Line 85: ​
+Line 86:   [31m[1mResolved config[22m[39m
+Line 87:   build:
+Line 88:     command: npm install && npm run build
+Line 89:     commandOrigin: config
+Line 90:     environment:
+Line 91:       - DATABASE_URL
+Line 92:       - NODE_ENV
+Line 93:       - NODE_VERSION
+Line 94:     publish: /opt/build/repo/dist/public
+Line 95:     publishOrigin: config
+Line 96:   functionsDirectory: /opt/build/repo/netlify/functions
+Line 97:   redirects:
+Line 98:     - from: /api/*
+      status: 200
+      to: /.netlify/functions/:splat
+    - from: /*
+      status: 200
+      to: /index.html
+Line 99: Build failed due to a user error: Build script returned non-zero exit code: 2
+Line 100: Failing build: Failed to build site
+Line 101: Finished processing build request in 22.485s
