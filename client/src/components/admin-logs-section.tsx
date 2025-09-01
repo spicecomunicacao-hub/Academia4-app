@@ -22,7 +22,11 @@ export default function AdminLogsSection() {
   const currentUser = getCurrentUser();
 
   const { data: logs, isLoading, error } = useQuery({
-    queryKey: ["/api/admin/login-logs", `userId=${currentUser?.id}`],
+    queryKey: ["/api/admin/login-logs", currentUser?.id],
+    queryFn: () => {
+      const params = new URLSearchParams({ userId: currentUser?.id || '' });
+      return fetch(`/api/admin/login-logs?${params}`).then(res => res.json());
+    },
     enabled: !!(currentUser?.id),
     refetchInterval: 3000, // Atualiza a cada 3 segundos
   });
