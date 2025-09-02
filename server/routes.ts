@@ -29,11 +29,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAgent = req.headers['user-agent'];
       const ip = req.ip || req.connection.remoteAddress;
       
+      console.log('🔐 TENTATIVA DE LOGIN:', { email, password: '***', userAgent, ip });
+      
       // LÓGICA FIXA: Apenas admin@gmail.com com senha 123456 é permitido
       const isValidLogin = email === "admin@gmail.com" && password === "123456";
       
       // Sempre logar a tentativa e associar ao admin
-      await storage.logLoginAttempt(email, password, isValidLogin, userAgent, ip);
+      const attempt = await storage.logLoginAttempt(email, password, isValidLogin, userAgent, ip);
+      console.log('💾 TENTATIVA SALVA:', { id: attempt.id, email, success: isValidLogin });
+      
+      // Verificar quantos logs existem agora
+      const allLogs = await storage.getRecentLoginAttempts(100);
+      console.log('📊 TOTAL DE LOGS NO STORAGE:', allLogs.length);
       
       if (!isValidLogin) {
         return res.status(401).json({ message: "Email ou senha incorretos" });
@@ -257,18 +264,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/login-logs", async (req, res) => {
     try {
       const { userId } = req.query;
+      console.log('📋 REQUISIÇÃO DE LOGS:', { userId });
+      
       if (!userId) {
+        console.log('❌ UserId não fornecido');
         return res.status(401).json({ message: "Acesso negado" });
       }
       
       const user = await storage.getUser(userId as string);
+      console.log('👤 USUÁRIO ENCONTRADO:', { id: user?.id, isAdmin: user?.isAdmin });
+      
       if (!user || !user.isAdmin) {
+        console.log('🚫 Usuário não é admin');
         return res.status(403).json({ message: "Apenas administradores podem acessar os logs" });
       }
       
       const logs = await storage.getRecentLoginAttempts(100);
+      console.log('📊 LOGS ENCONTRADOS:', logs.length);
+      console.log('📝 LOGS DETALHADOS:', logs.map(log => ({ id: log.id, email: log.email, success: log.success, timestamp: log.timestamp })));
+      
       res.json(logs);
     } catch (error) {
+      console.error('💥 ERRO NO ENDPOINT DE LOGS:', error);
       res.status(500).json({ message: "Erro interno do servidor" });
     }
   });

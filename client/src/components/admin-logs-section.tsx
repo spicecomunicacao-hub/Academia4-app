@@ -23,6 +23,11 @@ export default function AdminLogsSection() {
   
   console.log('👤 AdminLogsSection carregado. Usuário atual:', currentUser);
   console.log('🔑 É admin?', (currentUser as any)?.isAdmin);
+  
+  // Debug temporário - removerei depois
+  if (currentUser && (currentUser as any)?.isAdmin) {
+    console.log('⚡ DEBUG: Componente carregado com usuário admin válido');
+  }
 
   const { data: logs, isLoading, error } = useQuery({
     queryKey: ["/api/admin/login-logs", currentUser?.id, Date.now()], // Adicionando timestamp para forçar refresh

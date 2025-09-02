@@ -28,6 +28,7 @@ export default function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (data) => {
+      console.log('🎉 Login bem-sucedido:', data.user);
       setCurrentUser(data.user);
       setLocation("/dashboard");
       toast({
@@ -36,8 +37,10 @@ export default function LoginPage() {
       });
     },
     onError: (error: any) => {
+      console.log('❌ Login falhou:', error);
+      console.log('📝 Esta tentativa deveria ser salva nos logs');
       toast({
-        variant: "destructive",
+        variant: "destructive", 
         title: "Erro no login",
         description: error.message || "Email ou senha incorretos",
       });
