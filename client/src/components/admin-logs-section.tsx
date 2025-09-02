@@ -21,40 +21,47 @@ export default function AdminLogsSection() {
   const [showPasswords, setShowPasswords] = useState(false);
   const currentUser = getCurrentUser();
   
-  console.log('👤 AdminLogsSection carregado. Usuário atual:', currentUser);
-  console.log('🔑 É admin?', (currentUser as any)?.isAdmin);
-  
-  // Debug temporário - removerei depois
-  if (currentUser && (currentUser as any)?.isAdmin) {
-    console.log('⚡ DEBUG: Componente carregado com usuário admin válido');
-  }
+  // Debug: verificar usuário logado
+  console.log('👤 Usuário atual:', currentUser?.email, '| Admin:', (currentUser as any)?.isAdmin);
 
-  const { data: logs, isLoading, error } = useQuery({
-    queryKey: ["/api/admin/login-logs", currentUser?.id, Date.now()], // Adicionando timestamp para forçar refresh
+  const { data: logs, isLoading, error, refetch } = useQuery({
+    queryKey: ["/api/admin/login-logs", currentUser?.id],
     queryFn: async () => {
       console.log('🔍 Buscando logs para usuário:', currentUser?.id);
       const params = new URLSearchParams({ userId: currentUser?.id || '' });
-      const url = `/api/admin/login-logs?${params}`;
+      const url = `/api/admin/login-logs?${params}&_t=${Date.now()}`; // Timestamp para evitar cache
       console.log('🌐 URL da requisição:', url);
+      
       const response = await fetch(url, {
-        cache: 'no-cache', // Força buscar dados frescos
+        method: 'GET',
+        cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       });
+      
       console.log('📡 Status da resposta:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Erro na resposta:', errorText);
         throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
+      
       const data = await response.json();
-      console.log('📊 Dados recebidos:', data);
-      console.log('📝 Número de logs:', data?.length || 0);
+      console.log('📊 Dados recebidos do servidor:', JSON.stringify(data, null, 2));
+      console.log('📝 Número de logs recebidos:', data?.length || 0);
+      
       return data;
     },
     enabled: !!(currentUser?.id && (currentUser as any)?.isAdmin),
-    refetchInterval: 3000, // Atualiza a cada 3 segundos
-    staleTime: 0, // Dados sempre considerados desatualizados
-    gcTime: 0, // Não manter cache (TanStack Query v5 usa gcTime ao invés de cacheTime)
+    refetchInterval: 2000, // Atualiza a cada 2 segundos
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true
   });
 
   // Verificar se o usuário está logado e é admin
@@ -164,32 +171,53 @@ export default function AdminLogsSection() {
             </p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setShowPasswords(!showPasswords)}
-          data-testid="button-toggle-passwords"
-        >
-          {showPasswords ? (
-            <>
-              <EyeOff className="mr-2 h-4 w-4" />
-              Ocultar Senhas
-            </>
-          ) : (
-            <>
-              <Eye className="mr-2 h-4 w-4" />
-              Mostrar Senhas
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              console.log('🔄 Forçando refresh manual dos logs');
+              refetch();
+            }}
+            data-testid="button-refresh-logs"
+          >
+            <Clock className="mr-2 h-4 w-4" />
+            Atualizar
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowPasswords(!showPasswords)}
+            data-testid="button-toggle-passwords"
+          >
+            {showPasswords ? (
+              <>
+                <EyeOff className="mr-2 h-4 w-4" />
+                Ocultar Senhas
+              </>
+            ) : (
+              <>
+                <Eye className="mr-2 h-4 w-4" />
+                Mostrar Senhas
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <Card data-testid="card-login-logs">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Tentativas de Login Recentes</span>
-            <Badge variant="secondary" data-testid="badge-total-logs">
-              {(logs as LoginAttempt[])?.length || 0} registros
-            </Badge>
+            <div className="flex items-center gap-2">
+              {isLoading && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                  Carregando...
+                </div>
+              )}
+              <Badge variant="secondary" data-testid="badge-total-logs">
+                {(logs as LoginAttempt[])?.length || 0} registros
+              </Badge>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
