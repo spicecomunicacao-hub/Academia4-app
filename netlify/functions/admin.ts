@@ -13,12 +13,17 @@ const handler: Handler = async (event: HandlerEvent) => {
     return { statusCode: 200, headers };
   }
 
-  console.log('Admin function called with path:', event.path);
-  console.log('Query params:', event.queryStringParameters);
+  console.log('🚀 Admin function called with path:', event.path);
+  console.log('🔍 Query params:', event.queryStringParameters);
+  console.log('🌐 HTTP Method:', event.httpMethod);
+  console.log('📍 Path includes "login-logs":', event.path?.includes('login-logs'));
   
   try {
-    // GET /admin/login-logs
-    if (event.httpMethod === 'GET' && event.path.includes('login-logs')) {
+    // GET /admin/login-logs - Ajustar para verificar path
+    const pathToCheck = event.path || '';
+    console.log('🔎 Path being checked:', pathToCheck);
+    
+    if (event.httpMethod === 'GET' && (pathToCheck.includes('login-logs') || pathToCheck.endsWith('login-logs'))) {
       const userId = event.queryStringParameters?.userId;
       
       if (!userId) {
@@ -40,8 +45,15 @@ const handler: Handler = async (event: HandlerEvent) => {
       }
       
       // Buscar logs recentes
+      console.log('🔍 Buscando logs recentes...');
       const logs = await storage.getRecentLoginAttempts(100);
-      console.log('Returning logs:', logs.length, 'entries');
+      console.log('📊 Logs encontrados:', logs.length, 'entries');
+      console.log('📝 Detalhes dos logs:', logs.map(log => ({ 
+        id: log.id, 
+        email: log.email, 
+        success: log.success, 
+        timestamp: log.timestamp 
+      })));
       
       return {
         statusCode: 200,
