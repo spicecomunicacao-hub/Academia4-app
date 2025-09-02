@@ -5,9 +5,21 @@ import { insertUserSchema } from './shared/schema';
 const handler: Handler = async (event: HandlerEvent) => {
   // Inicializar banco de dados na primeira execução
   try {
+    console.log('Initializing database...');
     await initializeDatabase();
+    console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
+    // Return error if database initialization fails
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      },
+      body: JSON.stringify({ message: 'Database initialization failed: ' + error.message })
+    };
   }
 
   // Handle CORS
