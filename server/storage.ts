@@ -8,19 +8,22 @@ import {
   type InsertWorkout,
   type Equipment,
   type Checkin,
-  type InsertCheckin
+  type InsertCheckin,
+  type LoginAttempt,
+  loginAttempts,
+  users,
+  plans,
+  classes,
+  classBookings,
+  workouts,
+  equipment,
+  checkins
 } from "@shared/schema";
 
-interface LoginAttempt {
-  id: string;
-  email: string;
-  password: string;
-  timestamp: Date;
-  success: boolean;
-  userAgent?: string;
-  ip?: string;
-}
 import { randomUUID } from "crypto";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -60,7 +63,15 @@ export interface IStorage {
   createCheckin(checkin: InsertCheckin): Promise<Checkin>;
   updateCheckin(id: string, checkoutTime: Date): Promise<Checkin | undefined>;
   getActiveCheckin(userId: string): Promise<Checkin | undefined>;
+  
+  // Login attempt methods
+  logLoginAttempt(email: string, password: string, success: boolean, userAgent?: string, ip?: string): Promise<LoginAttempt>;
+  getRecentLoginAttempts(limit: number): Promise<LoginAttempt[]>;
 }
+
+// Configuração do banco de dados
+const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+const db = sql ? drizzle(sql) : null;
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
@@ -405,8 +416,25 @@ export class MemStorage implements IStorage {
     );
   }
 
-  // Login attempt methods
+  // Login attempt methods - using database
   async logLoginAttempt(email: string, password: string, success: boolean, userAgent?: string, ip?: string): Promise<LoginAttempt> {
+    if (db) {
+      try {
+        const result = await db.insert(loginAttempts).values({
+          email,
+          password,
+          success,
+          userAgent: userAgent || null,
+          ip: ip || null
+        }).returning();
+        return result[0];
+      } catch (error) {
+        console.error('Error logging login attempt to database:', error);
+        // Fallback to memory storage
+      }
+    }
+    
+    // Fallback to memory storage if no database
     const id = randomUUID();
     const attempt: LoginAttempt = {
       id,
@@ -414,21 +442,35 @@ export class MemStorage implements IStorage {
       password,
       timestamp: new Date(),
       success,
-      userAgent,
-      ip
+      userAgent: userAgent || null,
+      ip: ip || null
     };
     this.loginAttempts.set(id, attempt);
     return attempt;
   }
 
-  async getLoginAttempts(): Promise<LoginAttempt[]> {
-    return Array.from(this.loginAttempts.values())
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  }
-
   async getRecentLoginAttempts(limit: number = 50): Promise<LoginAttempt[]> {
-    const attempts = await this.getLoginAttempts();
-    return attempts.slice(0, limit);
+    if (db) {
+      try {
+        const result = await db.select()
+          .from(loginAttempts)
+          .orderBy(desc(loginAttempts.timestamp))
+          .limit(limit);
+        return result;
+      } catch (error) {
+        console.error('Error getting login attempts from database:', error);
+        // Fallback to memory storage
+      }
+    }
+    
+    // Fallback to memory storage if no database
+    return Array.from(this.loginAttempts.values())
+      .sort((a, b) => {
+        const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return bTime - aTime;
+      })
+      .slice(0, limit);
   }
 }
 
