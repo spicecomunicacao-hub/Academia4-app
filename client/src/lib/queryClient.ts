@@ -14,16 +14,32 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Detectar se está rodando no Netlify e configurar URL base da API
+function getApiBaseUrl(): string {
+  // Se estiver rodando no Netlify (hostname contém .netlify.app), usar URL do servidor Replit
+  if (typeof window !== 'undefined' && window.location.hostname.includes('.netlify.app')) {
+    // URL do servidor Replit
+    return 'https://04ed240b-55dc-45ff-b07d-55b9711aa06c-00-olz8c44mabmr.riker.replit.dev';
+  }
+  // Se estiver rodando localmente no Replit, usar URL relativa
+  return '';
+}
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const baseUrl = getApiBaseUrl();
+  const fullUrl = baseUrl + url;
+  
+  console.log('🌐 API Request:', { method, url, fullUrl, isNetlify: baseUrl !== '' });
+  
+  const res = await fetch(fullUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    credentials: baseUrl === '' ? "include" : "omit", // Use include apenas localmente
   });
 
   await throwIfResNotOk(res);
@@ -36,8 +52,13 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
+    const baseUrl = getApiBaseUrl();
+    const url = baseUrl + queryKey.join("/");
+    
+    console.log('🔍 Query Request:', { queryKey, url, isNetlify: baseUrl !== '' });
+    
+    const res = await fetch(url, {
+      credentials: baseUrl === '' ? "include" : "omit",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
