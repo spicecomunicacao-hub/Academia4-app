@@ -6,6 +6,7 @@ import { Eye, EyeOff, Clock, User, Shield } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
+import { apiRequest } from "@/lib/queryClient";
 
 interface LoginAttempt {
   id: string;
@@ -28,27 +29,17 @@ export default function AdminLogsSection() {
     queryKey: ["/api/admin/login-logs", currentUser?.id],
     queryFn: async () => {
       console.log('🔍 Buscando logs para usuário:', currentUser?.id);
-      const params = new URLSearchParams({ userId: currentUser?.id || '' });
-      const url = `/api/admin/login-logs?${params}&_t=${Date.now()}`; // Timestamp para evitar cache
+      const params = new URLSearchParams({ 
+        userId: currentUser?.id || '',
+        _t: Date.now().toString() // Timestamp para evitar cache
+      });
+      const url = `/api/admin/login-logs?${params}`;
       console.log('🌐 URL da requisição:', url);
       
-      const response = await fetch(url, {
-        method: 'GET',
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      });
+      // Usar apiRequest que já configura a URL base correta para Netlify
+      const response = await apiRequest('GET', url);
       
-      console.log('📡 Status da resposta:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Erro na resposta:', errorText);
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
-      }
+      console.log('📡 Response recebida');
       
       const data = await response.json();
       console.log('📊 Dados recebidos do servidor:', JSON.stringify(data, null, 2));
