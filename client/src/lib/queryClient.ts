@@ -18,8 +18,8 @@ async function throwIfResNotOk(res: Response) {
 function getApiBaseUrl(): string {
   // Se estiver rodando no Netlify (hostname contém .netlify.app), usar URL do servidor Replit
   if (typeof window !== 'undefined' && window.location.hostname.includes('.netlify.app')) {
-    // URL do servidor Replit
-    return 'https://04ed240b-55dc-45ff-b07d-55b9711aa06c-00-olz8c44mabmr.riker.replit.dev';
+    // URL do servidor Replit atualizada
+    return 'https://4ee4b517-5986-4d32-b212-cf70e21a4258-00-36wb1et76ifou.janeway.replit.dev';
   }
   // Se estiver rodando localmente no Replit, usar URL relativa
   return '';
@@ -39,7 +39,7 @@ export async function apiRequest(
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
-    credentials: baseUrl === '' ? "include" : "omit", // Use include apenas localmente
+    credentials: "omit", // Sempre omitir credentials para evitar problemas de CORS
   });
 
   await throwIfResNotOk(res);
@@ -58,7 +58,7 @@ export const getQueryFn: <T>(options: {
     console.log('🔍 Query Request:', { queryKey, url, isNetlify: baseUrl !== '' });
     
     const res = await fetch(url, {
-      credentials: baseUrl === '' ? "include" : "omit",
+      credentials: "omit", // Sempre omitir credentials para evitar problemas de CORS
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
