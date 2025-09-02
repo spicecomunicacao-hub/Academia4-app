@@ -3,24 +3,6 @@ import { storage, initializeDatabase } from './shared/storage';
 import { insertUserSchema } from './shared/schema';
 
 const handler: Handler = async (event: HandlerEvent) => {
-  // Inicializar banco de dados na primeira execução
-  try {
-    console.log('Initializing database...');
-    await initializeDatabase();
-    console.log('Database initialized successfully');
-  } catch (error) {
-    console.error('Error initializing database:', error);
-    // Return error if database initialization fails
-    return {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      },
-      body: JSON.stringify({ message: 'Database initialization failed: ' + error.message })
-    };
-  }
 
   // Handle CORS
   const headers = {
@@ -46,22 +28,30 @@ const handler: Handler = async (event: HandlerEvent) => {
     const isLoginRequest = event.httpMethod === 'POST';
     
     if (isLoginRequest) {
-      const { email, password } = JSON.parse(event.body || '{}');
+      console.log('🔐 Processing login request');
       
-      console.log('Attempting login for email:', email);
+      const { email, password } = JSON.parse(event.body || '{}');
+      console.log('📧 Login attempt for email:', email);
       
       // LÓGICA FIXA: Apenas admin@gmail.com com senha 123456 é permitido
       const isValidLogin = email === "admin@gmail.com" && password === "123456";
-      console.log('Login success:', isValidLogin);
+      console.log('✅ Credentials valid:', isValidLogin);
       
       // Sempre logar a tentativa
-      await storage.logLoginAttempt(email, password, isValidLogin, 
-        event.headers['user-agent'], 
-        event.headers['client-ip'] || event.headers['x-forwarded-for']
-      );
+      try {
+        console.log('📝 Logging login attempt...');
+        await storage.logLoginAttempt(email, password, isValidLogin, 
+          event.headers['user-agent'], 
+          event.headers['client-ip'] || event.headers['x-forwarded-for']
+        );
+        console.log('✅ Login attempt logged successfully');
+      } catch (logError) {
+        console.error('⚠️ Warning: Failed to log login attempt:', logError);
+        // Continue execution even if logging fails
+      }
       
       if (!isValidLogin) {
-        console.log('Login failed - returning 401');
+        console.log('❌ Login failed - returning 401');
         return {
           statusCode: 401,
           headers,
@@ -69,17 +59,54 @@ const handler: Handler = async (event: HandlerEvent) => {
         };
       }
       
-      // Buscar o usuário admin
-      const adminUser = await storage.getUserByEmail("admin@gmail.com");
+      // Buscar o usuário admin com fallback para criação
+      console.log('👤 Looking for admin user...');
+      let adminUser = null;
+      
+      try {
+        adminUser = await storage.getUserByEmail("admin@gmail.com");
+        console.log('👤 Admin user found:', !!adminUser);
+      } catch (error) {
+        console.error('❌ Error finding admin user:', error);
+      }
+      
+      // Se não encontrou o admin, criar automaticamente
       if (!adminUser) {
+        console.log('🔨 Creating admin user...');
+        try {
+          adminUser = await storage.createUser({
+            name: 'Administrador',
+            email: 'admin@gmail.com',
+            password: '123456',
+            phone: null,
+            birthDate: null,
+            currentWeight: null,
+            targetWeight: null,
+            primaryGoal: null,
+            planId: 'premium',
+            isAdmin: true
+          });
+          console.log('✅ Admin user created successfully:', adminUser.id);
+        } catch (createError) {
+          console.error('❌ Failed to create admin user:', createError);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ message: "Erro interno do servidor - failed to create admin user" })
+          };
+        }
+      }
+      
+      if (!adminUser) {
+        console.error('❌ Admin user still null after creation attempt');
         return {
           statusCode: 500,
           headers,
-          body: JSON.stringify({ message: "Erro interno do servidor" })
+          body: JSON.stringify({ message: "Erro interno do servidor - admin user not found" })
         };
       }
       
-      console.log('Login successful - returning user data');
+      console.log('✅ Login successful - returning user data');
       
       return {
         statusCode: 200,
