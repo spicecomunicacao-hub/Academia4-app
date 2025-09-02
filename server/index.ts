@@ -34,12 +34,13 @@ app.use((req, res, next) => {
   // Sempre definir o cabeçalho CORS
   if (isAllowedOrigin && origin) {
     res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
   } else {
     // Para origens não permitidas, ainda definimos alguns cabeçalhos básicos
     res.header('Access-Control-Allow-Origin', 'null');
-    res.header('Access-Control-Allow-Credentials', 'false');
   }
+  
+  // Não usar credentials para simplificar CORS
+  res.header('Access-Control-Allow-Credentials', 'false');
 
   // Sempre definir estes cabeçalhos
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
