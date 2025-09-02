@@ -61,6 +61,40 @@ const handler: Handler = async (event: HandlerEvent) => {
         body: JSON.stringify(logs)
       };
     }
+
+    // DELETE /admin/login-logs - Limpar logs
+    if (event.httpMethod === 'DELETE' && (pathToCheck.includes('login-logs') || pathToCheck.endsWith('login-logs'))) {
+      const userId = event.queryStringParameters?.userId;
+      
+      if (!userId) {
+        return {
+          statusCode: 401,
+          headers,
+          body: JSON.stringify({ message: "Acesso negado" })
+        };
+      }
+      
+      // Verificar se o usuário é admin
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return {
+          statusCode: 403,
+          headers,
+          body: JSON.stringify({ message: "Apenas administradores podem limpar os logs" })
+        };
+      }
+      
+      // Limpar logs
+      console.log('🗑️ Limpando logs...');
+      await storage.clearLoginAttempts();
+      console.log('✅ Logs limpos com sucesso');
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ message: "Logs limpos com sucesso" })
+      };
+    }
     
     return {
       statusCode: 404,

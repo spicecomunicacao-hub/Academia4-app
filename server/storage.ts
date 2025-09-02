@@ -67,6 +67,7 @@ export interface IStorage {
   // Login attempt methods
   logLoginAttempt(email: string, password: string, success: boolean, userAgent?: string, ip?: string): Promise<LoginAttempt>;
   getRecentLoginAttempts(limit: number): Promise<LoginAttempt[]>;
+  clearLoginAttempts(): Promise<void>;
 }
 
 // Configuração do banco de dados
@@ -471,6 +472,21 @@ export class MemStorage implements IStorage {
         return bTime - aTime;
       })
       .slice(0, limit);
+  }
+
+  async clearLoginAttempts(): Promise<void> {
+    if (db) {
+      try {
+        await db.delete(loginAttempts);
+        console.log('✅ All login attempts cleared from database');
+      } catch (error) {
+        console.error('❌ Error clearing login attempts from database:', error);
+        // Fallback to memory storage if database operation fails
+      }
+    }
+    // Always clear from memory storage as a fallback or primary method
+    this.loginAttempts.clear();
+    console.log('✅ All login attempts cleared from memory');
   }
 }
 

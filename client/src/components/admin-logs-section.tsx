@@ -2,11 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, EyeOff, Clock, User, Shield } from "lucide-react";
+import { Eye, EyeOff, Clock, User, Shield, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 interface LoginAttempt {
   id: string;
@@ -21,6 +23,7 @@ interface LoginAttempt {
 export default function AdminLogsSection() {
   const [showPasswords, setShowPasswords] = useState(false);
   const currentUser = getCurrentUser();
+  const { toast } = useToast();
   
   // Debug: verificar usuário logado
   console.log('👤 Usuário atual:', currentUser?.email, '| Admin:', (currentUser as any)?.isAdmin);
@@ -53,6 +56,41 @@ export default function AdminLogsSection() {
     gcTime: 0,
     refetchOnWindowFocus: true,
     refetchOnMount: true
+  });
+
+  // Mutação para limpar logs
+  const clearLogsMutation = useMutation({
+    mutationFn: async () => {
+      const params = new URLSearchParams({ 
+        userId: currentUser?.id || '',
+        _t: Date.now().toString()
+      });
+      const url = `/api/admin/login-logs?${params}`;
+      
+      const response = await apiRequest('DELETE', url);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao limpar logs');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Logs limpos!",
+        description: "Todos os logs de tentativas de login foram removidos.",
+      });
+      // Invalidar cache para recarregar a lista
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/login-logs"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao limpar logs",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   });
 
   // Verificar se o usuário está logado e é admin
@@ -188,6 +226,24 @@ export default function AdminLogsSection() {
               <>
                 <Eye className="mr-2 h-4 w-4" />
                 Mostrar Senhas
+              </>
+            )}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => clearLogsMutation.mutate()}
+            disabled={clearLogsMutation.isPending || (logs as LoginAttempt[])?.length === 0}
+            data-testid="button-clear-logs"
+          >
+            {clearLogsMutation.isPending ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                Limpando...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Limpar Logs
               </>
             )}
           </Button>
