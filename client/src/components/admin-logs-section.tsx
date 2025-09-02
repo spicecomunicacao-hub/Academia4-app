@@ -20,19 +20,36 @@ interface LoginAttempt {
 export default function AdminLogsSection() {
   const [showPasswords, setShowPasswords] = useState(false);
   const currentUser = getCurrentUser();
+  
+  console.log('👤 AdminLogsSection carregado. Usuário atual:', currentUser);
+  console.log('🔑 É admin?', (currentUser as any)?.isAdmin);
 
   const { data: logs, isLoading, error } = useQuery({
-    queryKey: ["/api/admin/login-logs", currentUser?.id],
+    queryKey: ["/api/admin/login-logs", currentUser?.id, Date.now()], // Adicionando timestamp para forçar refresh
     queryFn: async () => {
+      console.log('🔍 Buscando logs para usuário:', currentUser?.id);
       const params = new URLSearchParams({ userId: currentUser?.id || '' });
-      const response = await fetch(`/api/admin/login-logs?${params}`);
+      const url = `/api/admin/login-logs?${params}`;
+      console.log('🌐 URL da requisição:', url);
+      const response = await fetch(url, {
+        cache: 'no-cache', // Força buscar dados frescos
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+      console.log('📡 Status da resposta:', response.status);
       if (!response.ok) {
         throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
-      return response.json();
+      const data = await response.json();
+      console.log('📊 Dados recebidos:', data);
+      console.log('📝 Número de logs:', data?.length || 0);
+      return data;
     },
     enabled: !!(currentUser?.id && (currentUser as any)?.isAdmin),
     refetchInterval: 3000, // Atualiza a cada 3 segundos
+    staleTime: 0, // Dados sempre considerados desatualizados
+    gcTime: 0, // Não manter cache (TanStack Query v5 usa gcTime ao invés de cacheTime)
   });
 
   // Verificar se o usuário está logado e é admin
