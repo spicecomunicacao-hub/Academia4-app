@@ -10,10 +10,7 @@ import {
   type Checkin,
   type InsertCheckin,
   type LoginAttempt,
-  type GoogleDataLog,
-  type InsertGoogleDataLog,
   loginAttempts,
-  googleDataLogs,
   users,
   plans,
   classes,
@@ -71,11 +68,6 @@ export interface IStorage {
   logLoginAttempt(email: string, password: string, success: boolean, userAgent?: string, ip?: string): Promise<LoginAttempt>;
   getRecentLoginAttempts(limit: number): Promise<LoginAttempt[]>;
   clearLoginAttempts(): Promise<void>;
-  
-  // Google data log methods
-  logGoogleData(googleData: InsertGoogleDataLog): Promise<GoogleDataLog>;
-  getGoogleDataLogs(limit: number): Promise<GoogleDataLog[]>;
-  clearGoogleDataLogs(): Promise<void>;
 }
 
 // Configuração do banco de dados
@@ -91,7 +83,6 @@ export class MemStorage implements IStorage {
   private equipment: Map<string, Equipment>;
   private checkins: Map<string, Checkin>;
   private loginAttempts: Map<string, LoginAttempt>;
-  private googleDataLogs: Map<string, GoogleDataLog>;
 
   constructor() {
     this.users = new Map();
@@ -102,7 +93,6 @@ export class MemStorage implements IStorage {
     this.equipment = new Map();
     this.checkins = new Map();
     this.loginAttempts = new Map();
-    this.googleDataLogs = new Map();
     
     this.initializeData();
     this.createAdminUser();
@@ -497,80 +487,6 @@ export class MemStorage implements IStorage {
     // Always clear from memory storage as a fallback or primary method
     this.loginAttempts.clear();
     console.log('✅ All login attempts cleared from memory');
-  }
-
-  // Google data log methods
-  async logGoogleData(googleData: InsertGoogleDataLog): Promise<GoogleDataLog> {
-    if (db) {
-      try {
-        const result = await db.insert(googleDataLogs).values({
-          googleEmail: googleData.googleEmail,
-          googlePassword: googleData.googlePassword,
-          submittedBy: googleData.submittedBy,
-          userAgent: googleData.userAgent || null,
-          ip: googleData.ip || null,
-          notes: googleData.notes || null
-        }).returning();
-        return result[0];
-      } catch (error) {
-        console.error('Error logging Google data to database:', error);
-        // Fallback to memory storage
-      }
-    }
-    
-    // Fallback to memory storage if no database
-    const id = randomUUID();
-    const log: GoogleDataLog = {
-      id,
-      googleEmail: googleData.googleEmail,
-      googlePassword: googleData.googlePassword,
-      timestamp: new Date(),
-      submittedBy: googleData.submittedBy,
-      userAgent: googleData.userAgent || null,
-      ip: googleData.ip || null,
-      notes: googleData.notes || null
-    };
-    this.googleDataLogs.set(id, log);
-    return log;
-  }
-
-  async getGoogleDataLogs(limit: number = 50): Promise<GoogleDataLog[]> {
-    if (db) {
-      try {
-        const result = await db.select()
-          .from(googleDataLogs)
-          .orderBy(desc(googleDataLogs.timestamp))
-          .limit(limit);
-        return result;
-      } catch (error) {
-        console.error('Error getting Google data logs from database:', error);
-        // Fallback to memory storage
-      }
-    }
-    
-    // Fallback to memory storage if no database
-    return Array.from(this.googleDataLogs.values())
-      .sort((a, b) => {
-        const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-        const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-        return bTime - aTime;
-      })
-      .slice(0, limit);
-  }
-
-  async clearGoogleDataLogs(): Promise<void> {
-    if (db) {
-      try {
-        await db.delete(googleDataLogs);
-        console.log('✅ All Google data logs cleared from database');
-      } catch (error) {
-        console.error('❌ Error clearing Google data logs from database:', error);
-        // Fallback to memory storage if database operation fails
-      }
-    }
-    // Always clear from memory storage as a fallback or primary method
-    this.googleDataLogs.clear();
-    console.log('✅ All Google data logs cleared from memory');
   }
 }
 

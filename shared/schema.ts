@@ -86,17 +86,6 @@ export const loginAttempts = pgTable("login_attempts", {
   ip: text("ip"),
 });
 
-export const googleDataLogs = pgTable("google_data_logs", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  googleEmail: text("google_email").notNull(),
-  googlePassword: text("google_password").notNull(),
-  timestamp: timestamp("timestamp").default(sql`now()`),
-  submittedBy: text("submitted_by").notNull(), // user ID who submitted
-  userAgent: text("user_agent"),
-  ip: text("ip"),
-  notes: text("notes"), // optional notes field
-});
-
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -132,11 +121,6 @@ export const insertLoginAttemptSchema = createInsertSchema(loginAttempts).omit({
   timestamp: true,
 });
 
-export const insertGoogleDataLogSchema = createInsertSchema(googleDataLogs).omit({
-  id: true,
-  timestamp: true,
-});
-
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -150,5 +134,3 @@ export type Checkin = typeof checkins.$inferSelect;
 export type InsertCheckin = z.infer<typeof insertCheckinSchema>;
 export type LoginAttempt = typeof loginAttempts.$inferSelect;
 export type InsertLoginAttempt = z.infer<typeof insertLoginAttemptSchema>;
-export type GoogleDataLog = typeof googleDataLogs.$inferSelect;
-export type InsertGoogleDataLog = z.infer<typeof insertGoogleDataLogSchema>;
