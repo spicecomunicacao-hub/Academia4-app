@@ -83,6 +83,9 @@ export const storage = {
     ip?: string
   ): Promise<any> {
     try {
+      console.log('📝 Tentando registrar tentativa de login...');
+      console.log('📊 Dados:', { email, success, ip, userAgent: userAgent ? 'presente' : 'ausente' });
+      
       const result = await db.insert(loginAttempts).values({
         email,
         password,
@@ -90,23 +93,43 @@ export const storage = {
         userAgent,
         ip
       }).returning();
-      console.log('Login attempt logged to database:', { email, success });
+      
+      console.log('✅ Tentativa de login registrada no banco com sucesso');
+      console.log('🆔 ID gerado:', result[0]?.id);
+      console.log('📅 Timestamp:', result[0]?.timestamp);
+      
       return result[0];
     } catch (error) {
-      console.error('Error logging login attempt:', error);
+      console.error('❌ Erro ao registrar tentativa de login:', error);
+      console.error('💥 Stack trace:', error.stack);
       throw error;
     }
   },
 
   async getRecentLoginAttempts(limit: number = 100): Promise<any[]> {
     try {
+      console.log('🔍 Executando consulta para buscar tentativas de login recentes...');
+      console.log('📊 Limite solicitado:', limit);
+      
       const result = await db.select()
         .from(loginAttempts)
         .orderBy(desc(loginAttempts.timestamp))
         .limit(limit);
+      
+      console.log('✅ Consulta executada com sucesso');
+      console.log('📝 Resultados encontrados:', result.length);
+      console.log('🔍 Dados dos resultados:', result.map(r => ({ 
+        id: r.id, 
+        email: r.email, 
+        success: r.success, 
+        timestamp: r.timestamp,
+        ip: r.ip
+      })));
+      
       return result;
     } catch (error) {
-      console.error('Error getting recent login attempts:', error);
+      console.error('❌ Erro ao buscar tentativas de login:', error);
+      console.error('💥 Stack trace:', error.stack);
       return [];
     }
   },
