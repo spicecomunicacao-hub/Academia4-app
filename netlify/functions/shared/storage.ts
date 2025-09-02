@@ -195,45 +195,7 @@ export const storage = {
   }
 };
 
-// Inicializar dados básicos no banco (apenas se necessário)
+// Função simplificada para inicialização - não mais usada
 export async function initializeDatabase() {
-  try {
-    console.log('Checking for admin user...');
-    
-    // Verificar se já existe o usuário admin
-    const existingAdmin = await storage.getUserByEmail('admin@gmail.com');
-    console.log('Admin user exists:', !!existingAdmin);
-    
-    if (!existingAdmin) {
-      console.log('Creating admin user...');
-      
-      const adminData = {
-        name: 'Administrador',
-        email: 'admin@gmail.com',
-        password: '123456',
-        phone: null,
-        birthDate: null,
-        currentWeight: null,
-        targetWeight: null,
-        primaryGoal: null,
-        planId: 'premium',
-        isAdmin: true
-      };
-      
-      console.log('Admin data prepared:', JSON.stringify({...adminData, password: '***'}));
-      
-      const newAdmin = await storage.createUser(adminData);
-      console.log('Admin user created successfully with ID:', newAdmin.id);
-      
-      // Verificar se foi criado corretamente
-      const verifyAdmin = await storage.getUserByEmail('admin@gmail.com');
-      console.log('Admin verification:', verifyAdmin ? 'SUCCESS' : 'FAILED');
-    } else {
-      console.log('Admin user already exists with ID:', existingAdmin.id);
-    }
-  } catch (error) {
-    console.error('Error initializing database:', error);
-    console.error('Error stack:', error.stack);
-    throw new Error(`Database initialization failed: ${error.message}`);
-  }
+  console.log('Database initialization skipped - handled on-demand');
 }
