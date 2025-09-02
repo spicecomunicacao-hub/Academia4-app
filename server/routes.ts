@@ -290,6 +290,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear login logs route (apenas para admins)
+  app.delete("/api/admin/login-logs", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      console.log('🗑️ REQUISIÇÃO DE LIMPEZA DE LOGS:', { userId });
+      
+      if (!userId) {
+        console.log('❌ UserId não fornecido');
+        return res.status(401).json({ message: "Acesso negado" });
+      }
+      
+      const user = await storage.getUser(userId as string);
+      console.log('👤 USUÁRIO ENCONTRADO:', { id: user?.id, isAdmin: user?.isAdmin });
+      
+      if (!user || !user.isAdmin) {
+        console.log('🚫 Usuário não é admin');
+        return res.status(403).json({ message: "Apenas administradores podem limpar os logs" });
+      }
+      
+      await storage.clearLoginAttempts();
+      console.log('🗑️ LOGS LIMPOS COM SUCESSO');
+      
+      res.json({ message: "Logs limpos com sucesso" });
+    } catch (error) {
+      console.error('💥 ERRO NO ENDPOINT DE LIMPEZA DE LOGS:', error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -134,6 +134,20 @@ export const storage = {
     }
   },
 
+  async clearLoginAttempts(): Promise<void> {
+    try {
+      console.log('🗑️ Limpando todos os logs de tentativas de login...');
+      
+      await db.delete(loginAttempts);
+      
+      console.log('✅ Todos os logs de login foram limpos do PostgreSQL');
+    } catch (error) {
+      console.error('❌ Erro ao limpar logs:', error);
+      console.error('💥 Stack trace:', error.stack);
+      throw error;
+    }
+  },
+
   // Métodos de dados usando banco real
   async getWorkouts(userId: string): Promise<any[]> {
     try {
