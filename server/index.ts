@@ -6,7 +6,30 @@ const app = express();
 
 // Configuração de CORS para aceitar requisições do Netlify
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'http://localhost:5173',    // Desenvolvimento local
+    'http://localhost:5000',    // Servidor local alternativo
+    'https://localhost:5173',   // HTTPS local (se usado)
+    /^https:\/\/.*\.netlify\.app$/,  // Qualquer subdomínio do Netlify
+    /^https:\/\/.*\.replit\.dev$/,   // Qualquer subdomínio do Replit (se necessário)
+  ];
+
+  // Verificar se a origem está permitida
+  const isAllowedOrigin = allowedOrigins.some(allowed => {
+    if (typeof allowed === 'string') {
+      return origin === allowed;
+    }
+    if (allowed instanceof RegExp) {
+      return origin && allowed.test(origin);
+    }
+    return false;
+  });
+
+  if (isAllowedOrigin) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
