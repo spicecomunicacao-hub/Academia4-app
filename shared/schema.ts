@@ -76,6 +76,16 @@ export const checkins = pgTable("checkins", {
   duration: integer("duration"), // in minutes
 });
 
+export const loginAttempts = pgTable("login_attempts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  password: text("password").notNull(),
+  success: boolean("success").notNull(),
+  timestamp: timestamp("timestamp").default(sql`now()`),
+  userAgent: text("user_agent"),
+  ip: text("ip"),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -106,6 +116,11 @@ export const insertCheckinSchema = createInsertSchema(checkins).omit({
   duration: true,
 });
 
+export const insertLoginAttemptSchema = createInsertSchema(loginAttempts).omit({
+  id: true,
+  timestamp: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -117,3 +132,5 @@ export type InsertWorkout = z.infer<typeof insertWorkoutSchema>;
 export type Equipment = typeof equipment.$inferSelect;
 export type Checkin = typeof checkins.$inferSelect;
 export type InsertCheckin = z.infer<typeof insertCheckinSchema>;
+export type LoginAttempt = typeof loginAttempts.$inferSelect;
+export type InsertLoginAttempt = z.infer<typeof insertLoginAttemptSchema>;

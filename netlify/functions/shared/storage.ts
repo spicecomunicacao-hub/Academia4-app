@@ -1,8 +1,8 @@
 // Storage para Netlify Functions usando banco PostgreSQL
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
-import { users, plans, classes, classBookings, workouts, equipment, checkins } from '../../../shared/schema';
-import { eq } from 'drizzle-orm';
+import { users, plans, classes, classBookings, workouts, equipment, checkins, loginAttempts } from '../../../shared/schema';
+import { eq, desc } from 'drizzle-orm';
 
 export interface LoginLog {
   id: string;
@@ -20,9 +20,6 @@ if (!process.env.DATABASE_URL) {
 
 const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql);
-
-// Storage em memória para logs (temporário)
-let loginLogs: LoginLog[] = [];
 
 export const storage = {
   // Usuários
@@ -77,30 +74,41 @@ export const storage = {
     }
   },
 
-  // Logs de login (em memória por enquanto)
+  // Logs de login usando banco PostgreSQL
   async logLoginAttempt(
     email: string,
     password: string,
     success: boolean,
     userAgent?: string,
     ip?: string
-  ): Promise<void> {
-    const log: LoginLog = {
-      id: `log-${Date.now()}`,
-      email,
-      success,
-      timestamp: new Date().toISOString(),
-      userAgent,
-      ip
-    };
-    loginLogs.push(log);
-    console.log('Login attempt logged:', { email, success });
+  ): Promise<any> {
+    try {
+      const result = await db.insert(loginAttempts).values({
+        email,
+        password,
+        success,
+        userAgent,
+        ip
+      }).returning();
+      console.log('Login attempt logged to database:', { email, success });
+      return result[0];
+    } catch (error) {
+      console.error('Error logging login attempt:', error);
+      throw error;
+    }
   },
 
-  async getRecentLoginAttempts(limit: number = 100): Promise<LoginLog[]> {
-    return loginLogs
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, limit);
+  async getRecentLoginAttempts(limit: number = 100): Promise<any[]> {
+    try {
+      const result = await db.select()
+        .from(loginAttempts)
+        .orderBy(desc(loginAttempts.timestamp))
+        .limit(limit);
+      return result;
+    } catch (error) {
+      console.error('Error getting recent login attempts:', error);
+      return [];
+    }
   },
 
   // Métodos de dados usando banco real
