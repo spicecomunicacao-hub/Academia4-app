@@ -20,8 +20,8 @@ async function throwIfResNotOk(res: Response) {
 function getApiBaseUrl(): string {
   // Se estiver rodando no Netlify (hostname contém .netlify.app), usar URL do servidor Replit
   if (typeof window !== 'undefined' && window.location.hostname.includes('.netlify.app')) {
-    // URL do servidor Replit atualizada - usar a URL mais genérica
-    return 'https://4ee4b517-5986-4d32-b212-cf70e21a4258-00-36wb1et76ifou.janeway.replit.dev';
+    // URL do servidor Replit atualizada - usar a URL atual do projeto
+    return 'https://24a69c37-63bb-4076-b42c-b17336a79c35-00-2mha7cdnk1dcj.riker.replit.dev';
   }
   // Se estiver rodando localmente no Replit, usar URL relativa
   return '';
